@@ -77,7 +77,13 @@
       // Lấy public URL của từng ảnh và hiển thị
       for (const file of data) {
         // Lấy URL public
-        const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(file.name);
+        const { data: urlData, error: urlError } = supabase.storage.from(bucketName).getPublicUrl(file.name);
+if(urlError){
+  console.error('Lỗi lấy URL ảnh:', urlError);
+  continue; // bỏ qua file lỗi
+}
+console.log('Public URL:', urlData.publicUrl);
+
 
         const photoDiv = document.createElement('div');
         photoDiv.className = 'photo';
