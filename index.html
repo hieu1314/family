@@ -59,7 +59,8 @@
 
     async function loadPhotos() {
       // Lấy list file trong bucket (lấy 100 file đầu tiên)
-      const { data, error } = await supabase.storage.from(bucketName).list('', { limit: 100 });
+      const { data, error } = await supabase.storage.from(bucketName).list('2025', { limit: 100 });
+
 
       if (error) {
         galleryEl.textContent = 'Lỗi tải ảnh: ' + error.message;
