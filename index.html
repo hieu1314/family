@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Album Ảnh Gia Đình</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 0 10px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+    .photo {
+      width: 150px;
+      height: 150px;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.15);
+      cursor: pointer;
+      position: relative;
+    }
+    .photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .photo:hover img {
+      transform: scale(1.1);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
 
+  <h1>Album Ảnh Kỷ Niệm Gia Đình</h1>
+
+  <div id="gallery">Đang tải ảnh...</div>
+
+  <script>
+    // Khởi tạo Supabase client
+    const supabaseUrl = 'https://vaotrlttfbkoxnuimdnf.supabase.co';
+    const supabaseKey = 'sb_publishable_oMaMCvqnwgKxSw4N4NtkBg_rINxwM80';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    const bucketName = 'family-photos'; // Tên bucket bạn đã tạo trên Supabase Storage
+
+    const galleryEl = document.getElementById('gallery');
+
+    async function loadPhotos() {
+      // Lấy list file trong bucket (lấy 100 file đầu tiên)
+      const { data, error } = await supabase.storage.from(bucketName).list('', { limit: 100 });
+
+      if (error) {
+        galleryEl.textContent = 'Lỗi tải ảnh: ' + error.message;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        galleryEl.textContent = 'Chưa có ảnh nào trong album.';
+        return;
+      }
+
+      galleryEl.innerHTML = '';
+
+      // Lấy public URL của từng ảnh và hiển thị
+      for (const file of data) {
+        // Lấy URL public
+        const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(file.name);
+
+        const photoDiv = document.createElement('div');
+        photoDiv.className = 'photo';
+
+        const img = document.createElement('img');
+        img.src = urlData.publicUrl;
+        img.alt = file.name;
+
+        photoDiv.appendChild(img);
+        galleryEl.appendChild(photoDiv);
+      }
+    }
+
+    loadPhotos();
+  </script>
+
+</body>
+</html>
