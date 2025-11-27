@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
   /* ============================
-     1) TÌM KIẾM SỰ KIỆN (trong FullCalendar DOM)
+     1) TÌM KIẾM SỰ KIỆN
   ============================ */
   const searchBtn = document.getElementById('searchBtn');
   const searchInput = document.getElementById('searchInput');
@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-
   /* ============================
      2) KHỞI TẠO BẢN ĐỒ LEAFLET
   ============================ */
@@ -30,15 +29,14 @@ document.addEventListener("DOMContentLoaded", function () {
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
     .addTo(map);
 
-
   /* ============================
      3) DANH SÁCH ĐỊA ĐIỂM + MARKER
   ============================ */
   const locations = [
-    { lat: 21.0285, lon: 105.8542, name: 'Hà Nội', image: 'images/1.jpg', date: '2025-11-19' },
-    { lat: 12.865, lon: 108.235, name: 'Đà Lạt', image: 'images/2.jpg', date: '2025-11-19' },
-    { lat: 12.238, lon: 109.1967, name: 'Nha Trang', image: 'images/3.jpg', date: '2025-11-19' },
-    { lat: 10.762622, lon: 106.660172, name: 'TP.HCM', image: 'images/4.jpg', date: '2025-11-19' }
+    { lat: 21.0285, lon: 105.8542, name: 'Hà Nội', image: 'images/1.jpg', date: '2025-11-19', id: 1 },
+    { lat: 12.865, lon: 108.235, name: 'Đà Lạt', image: 'images/2.jpg', date: '2025-11-19', id: 2 },
+    { lat: 12.238, lon: 109.1967, name: 'Nha Trang', image: 'images/3.jpg', date: '2025-11-19', id: 3 },
+    { lat: 10.762622, lon: 106.660172, name: 'TP.HCM', image: 'images/4.jpg', date: '2025-11-19', id: 4 }
   ];
 
   locations.forEach(loc => {
@@ -48,36 +46,17 @@ document.addEventListener("DOMContentLoaded", function () {
       <strong>${loc.name}</strong><br>
       <img src="${loc.image}" style="width:100px"><br>
       <em>${loc.date}</em><br>
-      <a href="#" 
-         onclick='openMapPopup(
-           "${loc.name}",
-           ${JSON.stringify([{ url: loc.image, note: "Ảnh chụp tại " + loc.name }])},
-           "${loc.date}"
-         )'>
-         Xem chi tiết
-       </a>
+      <a href="#" onclick='viewEventDetail(
+        "${loc.name}",
+        ${JSON.stringify([{ url: loc.image, note: "Ảnh chụp tại " + loc.name }])},
+        "${loc.date}",
+        ${loc.id}
+      )'>Xem chi tiết</a>
     `);
   });
 
-
   /* ============================
-     4) POPUP ẢNH NHỎ TRONG LEAFLET (Không đụng popup lớn)
-  ============================ */
-  window.openMapPopup = function (name, images, date) {
-    const box = document.getElementById("event-detail");
-    let html = `
-      <h3>${name}</h3>
-      <img src="${images[0].url}" style="width: 100%; border-radius: 6px;">
-      <p><strong>Ngày:</strong> ${date}</p>
-    `;
-
-    box.innerHTML = html;
-    box.style.display = "block";
-  };
-
-
-  /* ============================
-     5) FIX MAP JUMP / BROKEN WIDTH
+     4) FIX MAP BROKEN WIDTH
   ============================ */
   setTimeout(() => map.invalidateSize(), 500);
   window.addEventListener("resize", () => map.invalidateSize());

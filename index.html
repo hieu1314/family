@@ -5,30 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nơi lưu giữ kỷ niệm</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-  const db = supabase.createClient(
-    "https://vaotrlttfbkoxnuimdnf.supabase.co",
-    "sb_publishable_oMaMCvqnwgKxSw4N4NtkBg_rINxwM80"
-  );
-</script>
   <!-- FullCalendar CSS -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet" />
 
-  <!-- Leaflet CSS (BẮT BUỘC) -->
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
-  
-
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-  <!-- FullCalendar JS -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
-  <script src="script.js"></script>
-  <script src="calendar.js"></script>
-  <!-- Your Custom CSS -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -54,18 +37,33 @@
       </div>
     </section>
 
-    <!-- Chi tiết sự kiện -->
+    <!-- Chi tiết sự kiện (Leaflet nhỏ) -->
     <div id="event-detail" class="event-detail"></div>
   </main>
 
-<!-- Popup xem sự kiện -->
-<div id="event-modal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <div id="modal-body"></div>
+  <!-- Popup xem sự kiện -->
+  <div id="event-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <div id="modal-body"></div>
+    </div>
   </div>
-</div>
-  
-  
+
+  <!-- JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+
+  <!-- Supabase client -->
+  <script>
+    const db = supabase.createClient(
+      "https://vaotrlttfbkoxnuimdnf.supabase.co",
+      "sb_publishable_oMaMCvqnwgKxSw4N4NtkBg_rINxwM80"
+    );
+  </script>
+
+  <!-- JS riêng -->
+  <script src="script.js"></script>
+  <script src="calendar.js"></script>
 </body>
 </html>
