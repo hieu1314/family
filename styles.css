@@ -107,8 +107,7 @@ header h1 {
   }
 }
 
-
-/* Modal */
+/* Popup modal */
 .modal {
   display: none;
   position: fixed;
@@ -119,70 +118,83 @@ header h1 {
   background: rgba(0,0,0,0.6);
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 1000;
 }
 
 .modal-content {
-  width: 80%;
-  max-width: 650px;
-  background: white;
-  border-radius: 10px;
+  background: #fff;
+  max-width: 600px;
+  width: 90%;
   padding: 20px;
+  border-radius: 8px;
   position: relative;
-  animation: fadeIn 0.3s ease;
+  overflow: hidden;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(.9); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
+/* Close button */
 .close-btn {
   position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 26px;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
   cursor: pointer;
 }
 
-/* Slider */
+/* Slide images */
 .slide-container {
   position: relative;
-  width: 100%;
-  margin-bottom: 8px;
+  text-align: center;
+  margin: 20px 0;
 }
 
 .slide-item {
-  opacity: 0;
-  transition: opacity 0.6s ease;
-  position: absolute;
-  width: 100%;
+  display: none;
+  transition: opacity 0.5s ease;
 }
 
 .slide-item.active {
+  display: block;
   opacity: 1;
-  position: relative;
 }
 
 .slide-image {
   width: 100%;
-  border-radius: 10px;
-}
-
-.image-note {
-  text-align: center;
-  font-size: 14px;
-  margin-top: 5px;
-  cursor: pointer;
-  color: #444;
-}
-
-/* Input ghi chú */
-.note-input {
-  width: 95%;
-  padding: 5px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
+  max-height: 300px;
+  object-fit: contain;
   border-radius: 6px;
 }
+
+/* Notes */
+.image-note {
+  margin-top: 5px;
+  font-style: italic;
+  cursor: pointer;
+  color: #555;
+}
+
+.note-input {
+  width: 100%;
+  margin-top: 5px;
+  padding: 5px;
+  display: block;
+  box-sizing: border-box;
+}
+
+/* Buttons */
+.modal-content button {
+  margin: 5px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background: #007bff;
+  color: #fff;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.modal-content button:hover {
+  background: #0056b3;
+}
+
 
