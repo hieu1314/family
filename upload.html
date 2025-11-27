@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Upload hình lên Supabase</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   body { font-family: Arial; padding: 20px; }
   #preview { margin-top: 20px; max-width: 300px; }
@@ -13,22 +13,21 @@
 
 <h2>Upload hình lên Supabase</h2>
 
-<!-- Chọn file -->
 <input type="file" id="fileInput" accept="image/*" />
-
-<!-- Nút upload -->
 <button id="uploadBtn">Upload</button>
 
-<!-- Xem trước ảnh -->
 <img id="preview" />
 
 <script>
-  // 1. Khởi tạo Supabase
-  const supabaseUrl = "https://vaotrlttfbkoxnuimdnf.supabase.co";  // thay YOUR_PROJECT_ID
-  const supabaseKey = "sb_publishable_oMaMCvqnwgKxSw4N4NtkBg_rINxwM80";  // Anon key của bạn
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  const { createClient } = supabase;
 
-  // 2. Hiển thị ảnh preview khi chọn file
+  // KHỞI TẠO CLIENT ĐÚNG CÁCH
+  const db = createClient(
+    "https://vaotrlttfbkoxnuimdnf.supabase.co",
+    "sb_publishable_oMaMCvqnwgKxSw4N4NtkBg_rINxwM80"
+  );
+
+  // Preview ảnh
   document.getElementById("fileInput").addEventListener("change", function() {
     const file = this.files[0];
     if (file) {
@@ -36,40 +35,38 @@
     }
   });
 
-  // 3. Upload ảnh
+  // Upload ảnh
   document.getElementById("uploadBtn").addEventListener("click", async () => {
-    const fileInput = document.getElementById("fileInput");
-    const file = fileInput.files[0];
 
-    if (!file) {
-      alert("Chọn 1 file trước đã!");
-      return;
-    }
+   const fileInput = document.getElementById("fileInput");
+const file = fileInput.files[0];
+if (!file) {
+  alert("Bạn chưa chọn file!");
+  return;
+}
 
-    const folder = " ";                 // folder trong bucket
-    const filePath = `${folder}/${file.name}`;  // VD: 2025/anh1.jpg
+// Up vào folder 'uploadrecent'
+const folder = "uploadrecent";
+const filePath = `${folder}/${file.name}`;
 
-    // 4. Upload lên Storage
-    const { data, error } = await supabase.storage
-      .from("family-photos")               // tên bucket của bạn
-      .upload(filePath, file);
+const { data, error } = await db.storage
+  .from("family-photos")
+  .upload(filePath, file, { upsert: false });
 
-    if (error) {
-      console.error("Upload lỗi:", error);
-      alert("Upload thất bại!");
-      return;
-    }
+if (error) {
+  console.error(error);
+  alert("Upload lỗi: " + error.message);
+  return;
+}
 
-    // 5. Lấy URL để xem hình (nếu bucket Private → bạn dùng signed URL)
-    const { data: urlData } = await supabase.storage
-      .from("family-photos")
-      .getPublicUrl(filePath);
+// Lấy URL public
+const { data: urlData } = await db.storage
+  .from("family-photos")
+  .getPublicUrl(filePath);
 
-    alert("Upload thành công!");
-    console.log("URL hình:", urlData.publicUrl);
+document.getElementById("preview").src = urlData.publicUrl;
+alert("Upload thành công!");
 
-    // Preview URL thực tế sau khi upload
-    document.getElementById("preview").src = urlData.publicUrl;
   });
 </script>
 

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nơi lưu giữ kỷ niệm</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const db = supabase.createClient(
+    "https://vaotrlttfbkoxnuimdnf.supabase.co",
+    "sb_publishable_oMaMCvqnwgKxSw4N4NtkBg_rINxwM80"
+  );
+</script>
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet" />
+
+  <!-- Leaflet CSS (BẮT BUỘC) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- Your Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>Nơi lưu giữ kỷ niệm<p>Life's journeys — captured<p></h1>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Tìm kiếm sự kiện...">
+      <button id="searchBtn">Tìm kiếm</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="container">
+      <!-- Bản đồ -->
+      <div class="map-container" id="map"></div>
+
+      <!-- Lịch -->
+      <div class="calendar-container">
+        <div id="calendar"></div>
+      </div>
+    </section>
+
+    <!-- Chi tiết sự kiện -->
+    <div id="event-detail" class="event-detail"></div>
+  </main>
+
+<!-- Popup xem sự kiện -->
+<div id="event-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <div id="modal-body"></div>
+  </div>
+</div>
+  
+  <script src="script.js"></script>
+</body>
+</html>

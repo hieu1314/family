@@ -1,0 +1,188 @@
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body */
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+/* Header */
+header {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.search-container {
+  margin-top: 10px;
+}
+
+#searchInput {
+  padding: 10px;
+  font-size: 1rem;
+  width: 200px;
+  margin-right: 10px;
+}
+
+#searchBtn {
+  padding: 10px;
+  font-size: 1rem;
+  background-color: #ff7f50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#searchBtn:hover {
+  background-color: #ff6347;
+}
+
+/* Main content */
+.container {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px;
+  height: 600px;
+}
+
+.map-container {
+  width: 48%;
+  height: 800px; /* Đảm bảo chiều cao cố định cho bản đồ */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+
+.calendar-container {
+  width: 45%;
+  height: 100%;
+  min-height: 500px;   /* chiều cao cố định */
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.event-detail {
+  display: none;
+  margin-top: 30px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.event-detail img {
+  width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.event-detail img:hover {
+  transform: scale(1.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+  }
+
+  .map-container, .calendar-container {
+    width: 90%;
+    height: 400px;  /* Giảm chiều cao trên màn hình nhỏ */
+  }
+}
+
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  width: 80%;
+  max-width: 650px;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+/* Slider */
+.slide-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.slide-item {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  position: absolute;
+  width: 100%;
+}
+
+.slide-item.active {
+  opacity: 1;
+  position: relative;
+}
+
+.slide-image {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.image-note {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 5px;
+  cursor: pointer;
+  color: #444;
+}
+
+/* Input ghi chú */
+.note-input {
+  width: 95%;
+  padding: 5px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
