@@ -1,27 +1,31 @@
 /*** Upload ảnh lên Supabase Storage ***/
-async function uploadToSupabase(file) {
-  const folder = "events";
-  const fileName = Date.now() + "-" + file.name;
-  const filePath = `${folder}/${fileName}`;
+async function uploadToSupabase(file, eventId) {
+  // Sử dụng folder theo format 'events/eventID1/'
+  const folder = `events/eventID${eventId}`;  
+  const fileName = Date.now() + "-" + file.name;  // Tạo tên file ngẫu nhiên dựa trên thời gian
+  const filePath = `${folder}/${fileName}`;  // Đường dẫn file đầy đủ trong folder
 
+  // Upload file lên Supabase Storage
   const { error } = await db.storage
     .from("family-photos")
     .upload(filePath, file, { cacheControl: "3600", upsert: false });
 
+  // Nếu có lỗi trong quá trình upload
   if (error) {
     alert("Upload thất bại!");
     console.log(error);
     return null;
   }
 
+  // Lấy URL của file đã upload để hiển thị
   const { data: urlData } = db.storage
     .from("family-photos")
     .getPublicUrl(filePath);
 
-  return urlData.publicUrl;
+  return urlData.publicUrl;  // Trả về URL công khai của ảnh
 }
 
-/*** POPUP XEM SỰ KIỆN ***/
+/*** Popup xem sự kiện ***/
 window.viewEventDetail = function(name, images, date, eventId = null) {
   const modal = document.getElementById("event-modal");
   const modalBody = document.getElementById("modal-body");
@@ -55,28 +59,38 @@ window.viewEventDetail = function(name, images, date, eventId = null) {
 
   let currentIndex = 0;
   const slides = modalBody.querySelectorAll(".slide-item");
-  function showSlide(i) { slides.forEach((s, idx)=>s.classList.toggle("active", idx===i)); }
+  function showSlide(i){ slides.forEach((s, idx)=>s.classList.toggle("active", idx===i)); }
 
   modalBody.querySelector("#prevBtn").onclick = ()=> { currentIndex=(currentIndex-1+slides.length)%slides.length; showSlide(currentIndex); };
   modalBody.querySelector("#nextBtn").onclick = ()=> { currentIndex=(currentIndex+1)%slides.length; showSlide(currentIndex); };
 
-  modalBody.querySelector("#addImageBtn").onclick = async () => {
-    const fileInput = document.createElement("input");
-    fileInput.type="file"; fileInput.accept="image/*";
+modalBody.querySelector("#addImageBtn").onclick = async () => {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file"; 
+  fileInput.accept = "image/*";
 
-    fileInput.onchange = async e => {
-      const file = e.target.files[0]; if(!file) return;
-      const publicUrl = await uploadToSupabase(file); if(!publicUrl) return;
+  fileInput.onchange = async e => {
+    const file = e.target.files[0]; 
+    if (!file) return;
+    
+    // Lấy URL ảnh sau khi upload lên Supabase
+    const publicUrl = await uploadToSupabase(file, eventId); 
+    if (!publicUrl) return;
 
-      imgArray.push({url: publicUrl, note:""});
-      if(eventId) await db.from("events").update({images: imgArray}).eq("id", eventId);
-      viewEventDetail(name,imgArray,date,eventId);
-    };
+    // Thêm ảnh vào mảng imgArray và cập nhật lại sự kiện
+    imgArray.push({ url: publicUrl, note: "" });
 
-    fileInput.click();
+    // Cập nhật sự kiện với ảnh mới
+    if (eventId) await db.from("events").update({ images: imgArray }).eq("id", eventId);
+    
+    // Hiển thị lại chi tiết sự kiện sau khi thêm ảnh
+    viewEventDetail(name, imgArray, date, eventId);
   };
 
-  document.querySelector(".close-btn").onclick = ()=>modal.style.display="none";
+  fileInput.click();
+};
+
+  document.querySelector(".close-btn").onclick = ()=> modal.style.display="none";
   modal.onclick = e => { if(e.target===modal) modal.style.display="none"; };
 
   window.editNote = i => modalBody.querySelector(`#note-${i}`).style.display="block";
@@ -87,14 +101,14 @@ window.viewEventDetail = function(name, images, date, eventId = null) {
   };
 };
 
-/*** FULLCALENDAR ***/
+/*** FullCalendar ***/
 document.addEventListener("DOMContentLoaded", async function() {
   let eventsFromDB = [];
   try {
     const { data, error } = await db.from("events").select("*");
-    if(error) { console.log(error); throw error; }
+    if(error){ console.log(error); throw error; }
     eventsFromDB = data || [];
-  } catch(e) {
+  } catch(e){
     console.log("Không lấy được events từ Supabase, dùng mẫu tạm");
     eventsFromDB = [
       {id:1,title:"Sự kiện 1",date:"2025-11-19",images:["images/1.jpg"]},
@@ -105,10 +119,8 @@ document.addEventListener("DOMContentLoaded", async function() {
 
   const calendar = new FullCalendar.Calendar(document.getElementById("calendar"), {
     initialView:"dayGridMonth",
-    height: "auto",
-    events: eventsFromDB.map(ev=>({
-      id: ev.id, title: ev.title, start: ev.date, images: ev.images||[]
-    })),
+    height:"auto",
+    events: eventsFromDB.map(ev=>({id: ev.id, title: ev.title, start: ev.date, images: ev.images||[] })),
     eventClick: info=>{
       viewEventDetail(info.event.title, info.event.extendedProps.images, info.event.startStr, info.event.id);
     }

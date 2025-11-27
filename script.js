@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-  /* ============================
-     1) TÌM KIẾM SỰ KIỆN
-  ============================ */
+  /* Tìm kiếm sự kiện */
   const searchBtn = document.getElementById('searchBtn');
   const searchInput = document.getElementById('searchInput');
 
@@ -11,27 +9,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const events = document.querySelectorAll('.fc-event');
 
     events.forEach(ev => {
-      const title = ev.querySelector('.fc-event-title').textContent.toLowerCase();
+      const title = ev.querySelector('.fc-event-title')?.textContent.toLowerCase() || '';
       ev.style.display = title.includes(query) ? 'block' : 'none';
     });
   });
 
-  /* ============================
-     2) KHỞI TẠO BẢN ĐỒ LEAFLET
-  ============================ */
-  const map = L.map('map', {
-    center: [16.0583, 108.2772],
-    zoom: 5.5,
-    scrollWheelZoom: true,
-    zoomControl: true
-  });
+  /* Khởi tạo bản đồ Leaflet */
+  const map = L.map('map', { center: [16.0583, 108.2772], zoom: 5.5 });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-    .addTo(map);
-
-  /* ============================
-     3) DANH SÁCH ĐỊA ĐIỂM + MARKER
-  ============================ */
+  /* Danh sách địa điểm mẫu */
   const locations = [
     { lat: 21.0285, lon: 105.8542, name: 'Hà Nội', image: 'images/1.jpg', date: '2025-11-19', id: 1 },
     { lat: 12.865, lon: 108.235, name: 'Đà Lạt', image: 'images/2.jpg', date: '2025-11-19', id: 2 },
@@ -41,7 +28,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   locations.forEach(loc => {
     const marker = L.marker([loc.lat, loc.lon]).addTo(map);
-
     marker.bindPopup(`
       <strong>${loc.name}</strong><br>
       <img src="${loc.image}" style="width:100px"><br>
@@ -55,9 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
     `);
   });
 
-  /* ============================
-     4) FIX MAP BROKEN WIDTH
-  ============================ */
+  /* Fix map width */
   setTimeout(() => map.invalidateSize(), 500);
   window.addEventListener("resize", () => map.invalidateSize());
 });
