@@ -1,2 +1,0 @@
-'https://vaotrlttfbkoxnuimdnf.supabase.co';
-'sb_publishable_oMaMCvqnwgKxSw4N4NtkBg_rINxwM80';
