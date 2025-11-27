@@ -22,8 +22,12 @@ async function uploadToSupabase(file, eventId) {
     .from("family-photos")
     .getPublicUrl(filePath);
 
-  return urlData.publicUrl;  // Trả về URL công khai của ảnh
+  // Sửa URL để có dạng đúng
+  const fullUrl = urlData.publicUrl.replace("https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public", "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public");
+
+  return fullUrl;  // Trả về URL công khai của ảnh
 }
+
 
 /*** Popup xem sự kiện ***/
 window.viewEventDetail = function(name, images, date, eventId = null) {
