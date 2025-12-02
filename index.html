@@ -1,66 +1,77 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nơi lưu giữ kỷ niệm</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nơi lưu giữ kỷ niệm</title>
 
-  <!-- FullCalendar CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet" />
+    <!-- Leaflet CSS/JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-timeline@7.4.9/dist/vis-timeline-graph2d.min.css">
+<script src="https://cdn.jsdelivr.net/npm/vis-timeline@7.4.9/dist/vis-timeline-graph2d.min.js"></script>
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles.css">
+
+    <!-- My CSS -->
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="timeline.css">
+    <link rel="stylesheet" href="map.css">
+    <link rel="stylesheet" href="info.css">
+    <link rel="stylesheet" href="viewer.css">
 </head>
 <body>
-  <header>
-    <h1>Nơi lưu giữ kỷ niệm<p>Life's journeys — captured<p></h1>
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Tìm kiếm sự kiện...">
-      <button id="searchBtn">Tìm kiếm</button>
+
+<header>
+    <div class="header-content">
+        <h1>Nơi lưu giữ kỷ niệm</h1>
+        <h2>Cherry’s Family Journeys</h2>
+        <div class="search-bar">
+            <input id="searchInput" placeholder="Tìm kiếm sự kiện...">
+            <button onclick="searchEvents()">Tìm kiếm</button>
+        </div>
+        <div class="filter-bar">
+            <input type="date" id="filterDateMin">
+            <input type="date" id="filterDateMax">
+            <select id="filterLocation">
+                <option value="all">Tất cả địa điểm</option>
+            </select>
+            <button onclick="filterEvents()">Lọc</button>
+        </div>
     </div>
-  </header>
+</header>
 
-  <main>
-    <section class="container">
-      <!-- Bản đồ -->
-      <div class="map-container" id="map"></div>
+<main>
+         <div id="timeline-wrapper">
+        <div id="timeline"></div>
 
-      <!-- Lịch -->
-      <div class="calendar-container">
-        <div id="calendar"></div>
-      </div>
-    </section>
-
-    <!-- Chi tiết sự kiện (Leaflet nhỏ) -->
-    <div id="event-detail" class="event-detail"></div>
-  </main>
-
-  <!-- Popup xem sự kiện -->
-  <div id="event-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn">&times;</span>
-      <div id="modal-body"></div>
+        <!-- Decoration icons trực tiếp trong HTML -->
+        <div id="butterfly1" class="decor-icon">🦋</div>
+           <div id="flower2" class="decor-icon">🌸</div>
+        <div id="heart1" class="decor-icon">💕</div>
+<div id="butterfly2" class="decor-icon">🦋</div>
+        <div id="heart2" class="decor-icon">💕</div>
+                     <div id="flower1" class="decor-icon">🌸</div>
     </div>
-  </div>
 
-  <!-- JS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+    <div id="map"></div>
+    <div id="info"></div>
+</main>
 
-  <!-- Supabase client -->
-  <script>
-    const db = supabase.createClient(
-      "https://vaotrlttfbkoxnuimdnf.supabase.co",
-      "sb_publishable_oMaMCvqnwgKxSw4N4NtkBg_rINxwM80"
-    );
-  </script>
+<!-- Viewer popup -->
+<div id="viewer" class="hidden">
+    <span class="close" onclick="closeViewer()">×</span>
+    <button id="prevImg" onclick="prevImage()">&#10094;</button>
+    <img id="viewerImg">
+    <button id="nextImg" onclick="nextImage()">&#10095;</button>
+</div>
 
-  <!-- JS riêng -->
-  <script src="script.js"></script>
-  <script src="calendar.js"></script>
+<!-- My JS -->
+<script src="app.js" defer></script>
+<script src="timeline.js" defer></script>
+<script src="map.js" defer></script>
+<script src="info.js" defer></script>
+<script src="viewer.js" defer></script>
+
 </body>
 </html>
