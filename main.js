@@ -18,8 +18,8 @@ let timeline;
 /* ---------------------- KHỞI TẠO TẤT CẢ ---------------------- */
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ---- TIMELINE ---- */
-        let items = new vis.DataSet(
+/* ---- TIMELINE ---- */
+let items = new vis.DataSet(
     allEvents.map(ev => ({
         id: ev.id,
         content: ev.title,
@@ -29,42 +29,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const now = new Date();
 
-// Mặc định PC: 1 năm trước → hôm nay
+// PC: 1 năm
 const defaultStart = new Date(now.getTime());
 defaultStart.setFullYear(now.getFullYear() - 1);
 const defaultEnd = now;
 
-// MOBILE: dùng like “Now button”
-// 1 tháng trước → 3 ngày sau
+// Mobile: 1 tháng trước – 3 ngày sau
 const isMobile = window.innerWidth <= 768;
-
-let mobileStart, mobileEnd;
-if (isMobile) {
-    mobileStart = new Date(now.getTime());
-    mobileStart.setMonth(now.getMonth() - 1); // 1 tháng trước
-
-    mobileEnd = new Date(now.getTime());
-    mobileEnd.setDate(now.getDate() + 3); // 3 ngày sau
-}
 
 timeline = new vis.Timeline(
     document.getElementById("timeline"),
     items,
     {
         height: "100%",
-
-        // PC dùng 1 năm, Mobile dùng 1 tháng + 3 ngày
-        start: isMobile ? mobileStart : defaultStart,
-        end: isMobile ? mobileEnd : defaultEnd,
-
+        start: defaultStart,
+        end: defaultEnd,
         locale: "en",
-        zoomMin: 1000 * 60 * 60 * 24,        // 1 ngày
-        zoomMax: 1000 * 60 * 60 * 24 * 366,  // 1 năm
+
+        zoomMin: 1000 * 60 * 60 * 24,
+        zoomMax: 1000 * 60 * 60 * 24 * 366,
 
         timeAxis: {
-            scale: isMobile ? 'day' : 'week', // Mobile: day view; PC: week view
+            scale: isMobile ? "day" : "week",
             step: 1,
-
             format: {
                 minorLabels: function(date) {
                     const weekNo = getWeekNumber(date);
@@ -78,21 +65,37 @@ timeline = new vis.Timeline(
         }
     }
 );
-// Click vào event → mở viewer
+
+// Click event
 timeline.on("select", props => {
     const ev = allEvents.find(e => e.id === props.items[0]);
     if (ev) openViewer(ev.images);
 });
 
-// Nút NOW (cho PC + mobile luôn dùng)
+// ==========================
+// MOBILE: ép lại cửa sổ xem
+// ==========================
+if (isMobile) {
+    const now2 = new Date();
+
+    const mStart = new Date(now2.getTime());
+    mStart.setMonth(now2.getMonth() - 1);
+
+    const mEnd = new Date(now2.getTime());
+    mEnd.setDate(now2.getDate() + 3);
+
+    requestAnimationFrame(() => {
+        timeline.setWindow(mStart, mEnd, { animation: false });
+    });
+}
+
+// Nút NOW
 document.getElementById("nowBtn").addEventListener("click", () => {
     const now = new Date();
 
-    // 2 tháng trước
     const start = new Date(now.getTime());
     start.setMonth(now.getMonth() - 2);
 
-    // 3 ngày sau
     const end = new Date(now.getTime());
     end.setDate(now.getDate() + 3);
 
@@ -101,6 +104,7 @@ document.getElementById("nowBtn").addEventListener("click", () => {
         timeAxis: { scale: 'day', step: 1 }
     });
 });
+
 /* ---- MAP ---- */
 map = L.map("map");
 
