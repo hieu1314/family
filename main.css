@@ -2,56 +2,124 @@ body, html {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-}
-
-header {
-    height: 120px;
-    background: #ffdce0;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    box-sizing: border-box;
+    height: 100%;
+    display: flex;         /* thêm */
     flex-direction: column;
-    justify-content: center;
 }
 
+
+/* HEADER */
+header {
+    background: #ffdce0;
+    padding: 15px;
+    text-align: center;
+}
 header h1 {
     margin: 0;
-    font-size: 28px;
-    color: #ff6f7f;
+    color: #ff4f72;
 }
-
 header h2 {
     margin: 0;
-    font-size: 16px;
-    color: #444;
+    color: #666;
 }
 
-.search-bar, .filter-bar {
-    margin-top: 5px;
+/* TIMELINE */
+#timeline-wrapper {
+    height: 150px;      /* hoặc fixed px */
+    border-bottom: 2px solid #ffaac7;
+    background: #ffe6f2;
+    flex-shrink: 0;  /* không bị co */
 }
-
-main {
-    display: grid;
-    grid-template-rows: 140px auto;
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-        "timeline timeline"
-        "map info";
-    height: calc(100vh - 120px);
-    gap: 5px;
-}
-
-#map {
-    grid-area: map;
-}
-
-#info {
-    grid-area: info;
-    overflow-y: auto;
-    padding: 5px;
-}
-
 #timeline {
-    grid-area: timeline;
+    height: 100%;
+}
+
+/* MAP + INFO */
+#map-info-wrapper {
+        display: flex;
+        flex: 1;               /* CHIẾM TOÀN BỘ PHẦN CÒN LẠI */
+    gap: 10px;
+    margin-top: 10px;
+        min-height: 0;       /* quan trọng cho flex con scroll được */
+}
+
+/* MAP */
+#map {
+    flex: 2;
+       min-height: 0;
+    border: 2px solid #eee;
+}
+
+/* INFO */
+#info {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    background: white;
+    border-left: 2px solid #eee;
+    padding: 10px;
+    min-height: 0;
+}
+
+.info-event {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+.info-event:hover {
+    background: #ffeef3;
+}
+.info-event .note {
+    margin-top: 4px;
+    font-size: 0.9em;
+    color: #444;
+    font-style: italic;
+    line-height: 1.3em;
+    white-space: pre-line; /* cho xuống dòng nếu cần */
+}
+
+
+/* VIEWER */
+#viewer {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+#viewer.hidden {
+    display: none;
+}
+#viewer img {
+    max-width: 90%;
+    max-height: 90%;
+}
+#prevImg, #nextImg {
+    background: none;
+    color: white;
+    border: none;
+    font-size: 40px;
+    cursor: pointer;
+}
+.close {
+    position: absolute;
+    top: 20px; right: 30px;
+    font-size: 40px;
+    color: white;
+    cursor: pointer;
+}
+
+@media(max-width:900px) {
+    #map-info-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+    #map, #info {
+        height: 300px;
+    }
 }

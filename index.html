@@ -5,73 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nơi lưu giữ kỷ niệm</title>
 
-    <!-- Leaflet CSS/JS -->
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-timeline@7.4.9/dist/vis-timeline-graph2d.min.css">
-<script src="https://cdn.jsdelivr.net/npm/vis-timeline@7.4.9/dist/vis-timeline-graph2d.min.js"></script>
+    <!-- Timeline -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-timeline@7.4.9/styles/vis-timeline-graph2d.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vis-timeline@7.4.9/standalone/umd/vis-timeline-graph2d.min.js"></script>
 
-
-    <!-- My CSS -->
+    <!-- CSS -->
     <link rel="stylesheet" href="main.css">
-    <link rel="stylesheet" href="timeline.css">
-    <link rel="stylesheet" href="map.css">
-    <link rel="stylesheet" href="info.css">
-    <link rel="stylesheet" href="viewer.css">
 </head>
+
 <body>
 
 <header>
-    <div class="header-content">
-        <h1>Nơi lưu giữ kỷ niệm</h1>
-        <h2>Cherry’s Family Journeys</h2>
-        <div class="search-bar">
-            <input id="searchInput" placeholder="Tìm kiếm sự kiện...">
-            <button onclick="searchEvents()">Tìm kiếm</button>
-        </div>
-        <div class="filter-bar">
-            <input type="date" id="filterDateMin">
-            <input type="date" id="filterDateMax">
-            <select id="filterLocation">
-                <option value="all">Tất cả địa điểm</option>
-            </select>
-            <button onclick="filterEvents()">Lọc</button>
-        </div>
-    </div>
+    <h1>Nơi lưu giữ kỷ niệm</h1>
+    <h2>Cherry’s Family Journeys</h2>
 </header>
 
-<main>
-         <div id="timeline-wrapper">
-        <div id="timeline"></div>
-
-        <!-- Decoration icons trực tiếp trong HTML -->
-        <div id="butterfly1" class="decor-icon">🦋</div>
-           <div id="flower2" class="decor-icon">🌸</div>
-        <div id="heart1" class="decor-icon">💕</div>
-<div id="butterfly2" class="decor-icon">🦋</div>
-        <div id="heart2" class="decor-icon">💕</div>
-                     <div id="flower1" class="decor-icon">🌸</div>
-    </div>
-
-    <div id="map"></div>
-    <div id="info"></div>
-</main>
-
-<!-- Viewer popup -->
-<div id="viewer" class="hidden">
-    <span class="close" onclick="closeViewer()">×</span>
-    <button id="prevImg" onclick="prevImage()">&#10094;</button>
-    <img id="viewerImg">
-    <button id="nextImg" onclick="nextImage()">&#10095;</button>
+<!-- TIMELINE -->
+<div id="timeline-wrapper">
+    <div id="timeline"></div>
 </div>
 
-<!-- My JS -->
-<script src="app.js" defer></script>
-<script src="timeline.js" defer></script>
-<script src="map.js" defer></script>
-<script src="info.js" defer></script>
-<script src="viewer.js" defer></script>
+<!-- MAP + INFO -->
+<div id="map-info-wrapper">
+    <div id="map"></div>
+    <div id="info"></div>
+</div>
+
+<!-- VIEWER POPUP -->
+<div id="viewer" class="hidden">
+    <span class="close" onclick="closeViewer()">×</span>
+    <button id="prevImg">&#10094;</button>
+    <img id="viewerImg">
+    <button id="nextImg">&#10095;</button>
+</div>
+
+<!-- JS -->
+<script src="app.js"></script>
+<script src="main.js"></script>
 
 </body>
 </html>
