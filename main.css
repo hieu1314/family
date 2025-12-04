@@ -7,15 +7,14 @@ body, html {
     flex-direction: column;
 }
 
-
 /* HEADER */
 header {
     background: #ffdce0;
-    padding: 15px;
+    padding: 50px;
     text-align: center;
 }
 header h1 {
-    margin: 0;
+    margin:0;
     color: #ff4f72;
 }
 header h2 {
@@ -32,6 +31,24 @@ header h2 {
 }
 #timeline {
     height: 100%;
+}
+#nowBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    padding: 6px 12px;
+    background: #ff4f72;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.25);
+}
+
+#nowBtn:active {
+    transform: scale(0.95);
 }
 
 /* MAP + INFO */
