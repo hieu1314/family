@@ -57,8 +57,14 @@ if (isMobile) {
     }
 }
 
-// Hiệu ứng
-const effects = ["show", "flip", "slide"];
+// ====================================
+//     THÊM HIỆU ỨNG MỚI TẠI ĐÂY
+// ====================================
+
+// effects cũ: show, flip, slide
+// effects mới: pageflip, tornado
+const effects = ["show", "flip", "slide", "pageflip", "tornado"];
+
 
 // Load ảnh ban đầu
 boxes.forEach(img => {
@@ -66,9 +72,9 @@ boxes.forEach(img => {
     setTimeout(() => img.classList.add("show"), 80);
 });
 
-// Đổi ảnh
+// Hàm đổi ảnh
 function changeTile(img) {
-    img.className = ""; // reset
+    img.className = ""; // reset class
 
     const file = allImages[Math.floor(Math.random() * allImages.length)];
     const effect = effects[Math.floor(Math.random() * effects.length)];
