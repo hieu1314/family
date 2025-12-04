@@ -58,13 +58,9 @@ if (isMobile) {
 }
 
 // ====================================
-//     THÊM HIỆU ỨNG MỚI TẠI ĐÂY
+//      HIỆU ỨNG (giữ nguyên + thêm mới)
 // ====================================
-
-// effects cũ: show, flip, slide
-// effects mới: pageflip, tornado
 const effects = ["show", "flip", "slide", "pageflip", "tornado"];
-
 
 // Load ảnh ban đầu
 boxes.forEach(img => {
@@ -85,8 +81,18 @@ function changeTile(img) {
     }, 50);
 }
 
-// Đổi 1 hình mỗi 2–3 giây
+// ====================================
+//  ⚡ MỖI LẦN ĐỔI 2 TẤM – CHU KỲ 5 GIÂY
+// ====================================
 setInterval(() => {
-    const img = boxes[Math.floor(Math.random() * boxes.length)];
-    changeTile(img);
-}, 2000 + Math.random() * 1000);
+    // chọn 2 tấm khác nhau
+    const indexes = [];
+
+    while (indexes.length < 2) {
+        const idx = Math.floor(Math.random() * boxes.length);
+        if (!indexes.includes(idx)) indexes.push(idx);
+    }
+
+    changeTile(boxes[indexes[0]]);
+    changeTile(boxes[indexes[1]]);
+}, 5000); // 5 giây

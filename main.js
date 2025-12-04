@@ -7,11 +7,19 @@ let map, markers = [];
 /* TIMELINE */
 let timeline;
 
+ function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
+
 /* ---------------------- KHỞI TẠO TẤT CẢ ---------------------- */
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ---- TIMELINE ---- */
-    let items = new vis.DataSet(
+        let items = new vis.DataSet(
         allEvents.map(ev => ({
             id: ev.id,
             content: ev.title,
@@ -19,15 +27,64 @@ document.addEventListener("DOMContentLoaded", () => {
         }))
     );
 
+    const now = new Date();
+
+    // Start = 1 năm trước
+    const defaultStart = new Date(now.getTime());
+    defaultStart.setFullYear(now.getFullYear() - 1);
+
+    const defaultEnd = now; // đến thời điểm hiện tại
+
     timeline = new vis.Timeline(
         document.getElementById("timeline"),
         items,
-        { height: "100%" }
+        {
+            height: "100%",
+            start: defaultStart,
+            end: defaultEnd,
+            locale: "en",   // << CHỐT QUAN TRỌNG: dùng tiếng Anh
+            zoomMin: 1000 * 60 * 60 * 24,         // 1 ngày
+            zoomMax: 1000 * 60 * 60 * 24 * 366,   // ~1 năm
+            timeAxis: {
+                scale: 'week',
+                step: 1,
+                // formatter hiển thị "Tuần X / Tháng Y"
+                format: {
+                    minorLabels: function(date, scale, step) {
+                        const weekNo = getWeekNumber(date);
+                        const monthNo = date.getMonth() + 1;
+                        return `Tuần ${weekNo}`;
+                    },
+                    majorLabels: function(date, scale, step) {
+                        const monthNo = date.getMonth() + 1;
+                        return `Tháng ${monthNo}`;
+                    }
+                }
+            }
+        }
     );
 
     timeline.on("select", props => {
         const ev = allEvents.find(e => e.id === props.items[0]);
         if (ev) openViewer(ev.images);
+    });
+
+    // Nút Now
+    document.getElementById("nowBtn").addEventListener("click", () => {
+        const now = new Date();
+
+        // 2 tháng trước
+        const start = new Date(now.getTime());
+        start.setMonth(now.getMonth() - 2);
+
+        // 3 ngày sau
+        const end = new Date(now.getTime());
+        end.setDate(now.getDate() + 3);
+
+        timeline.setWindow(start, end, { 
+            animation: true,
+            timeAxis: { scale: 'day', step: 1 } // hiển thị ngày rõ
+        });
     });
 
 /* ---- MAP ---- */
