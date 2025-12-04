@@ -28,73 +28,68 @@ let items = new vis.DataSet(
 );
 
 const now = new Date();
+const isMobile = window.innerWidth <= 768;
 
 // PC: 1 năm
 const defaultStart = new Date(now.getTime());
 defaultStart.setFullYear(now.getFullYear() - 1);
 const defaultEnd = now;
 
-// Mobile: 1 tháng trước – 3 ngày sau
-const isMobile = window.innerWidth <= 768;
+// MOBILE: 10 ngày trước – 3 ngày sau
+let mobileStart, mobileEnd;
+if (isMobile) {
+    mobileStart = new Date(now.getTime());
+    mobileStart.setDate(now.getDate() - 10);
+
+    mobileEnd = new Date(now.getTime());
+    mobileEnd.setDate(now.getDate() + 3);
+}
 
 timeline = new vis.Timeline(
     document.getElementById("timeline"),
     items,
     {
         height: "100%",
-        start: defaultStart,
-        end: defaultEnd,
+
+        // PC: 1 năm – MOBILE: 10d → 3d
+        start: isMobile ? mobileStart : defaultStart,
+        end: isMobile ? mobileEnd : defaultEnd,
+
         locale: "en",
 
-        zoomMin: 1000 * 60 * 60 * 24,
-        zoomMax: 1000 * 60 * 60 * 24 * 366,
+        zoomMin: 1000 * 60 * 60 * 24,          // 1 ngày
+        zoomMax: 1000 * 60 * 60 * 24 * 90,     // mobile không zoom tới mức quá lớn
 
         timeAxis: {
-            scale: isMobile ? "day" : "week",
+            scale: isMobile ? 'day' : 'week',
             step: 1,
             format: {
-                minorLabels: function(date) {
-                    const weekNo = getWeekNumber(date);
-                    return `Tuần ${weekNo}`;
-                },
-                majorLabels: function(date) {
-                    const monthNo = date.getMonth() + 1;
-                    return `Tháng ${monthNo}`;
-                }
+                minorLabels: date => date.getDate(),  // hiển thị số ngày
+                majorLabels: date => `Tháng ${date.getMonth() + 1}`
             }
         }
     }
 );
 
-// Click event
+// Mở hình khi click event
 timeline.on("select", props => {
     const ev = allEvents.find(e => e.id === props.items[0]);
     if (ev) openViewer(ev.images);
 });
 
-// ==========================
-// MOBILE: ép lại cửa sổ xem
-// ==========================
+// MOBILE: ép lại cửa sổ để chắc chắn hiển thị đúng
 if (isMobile) {
-    const now2 = new Date();
-
-    const mStart = new Date(now2.getTime());
-    mStart.setMonth(now2.getMonth() - 1);
-
-    const mEnd = new Date(now2.getTime());
-    mEnd.setDate(now2.getDate() + 3);
-
     requestAnimationFrame(() => {
-        timeline.setWindow(mStart, mEnd, { animation: false });
+        timeline.setWindow(mobileStart, mobileEnd, { animation: false });
     });
 }
 
-// Nút NOW
+// NÚT NOW: 10 ngày trước → 3 ngày sau
 document.getElementById("nowBtn").addEventListener("click", () => {
     const now = new Date();
 
     const start = new Date(now.getTime());
-    start.setMonth(now.getMonth() - 2);
+    start.setDate(now.getDate() - 10);
 
     const end = new Date(now.getTime());
     end.setDate(now.getDate() + 3);

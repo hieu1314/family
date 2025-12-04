@@ -140,3 +140,77 @@ header h2 {
         height: 300px;
     }
 }
+
+/* ============================
+   MOBILE TỐI ƯU
+============================ */
+@media (max-width: 768px) {
+
+    body, html {
+        height: 100%;
+        overflow: hidden; /* tránh tràn màn hình */
+    }
+
+    header {
+        padding: 25px 10px;    /* nhỏ hơn */
+        min-height: 120px;     /* không quá cao */
+        box-sizing: border-box;
+    }
+
+    header h1 {
+        font-size: 1.5rem;
+    }
+    header h2 {
+        font-size: 1rem;
+    }
+
+    /* TIMELINE THẤP VỪA */
+    #timeline-wrapper {
+        height: 110px;
+        min-height: 110px;
+    }
+
+    #nowBtn {
+        top: 5px;
+        right: 5px;
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    /* MAP + INFO xếp theo chiều dọc */
+    #map-info-wrapper {
+        flex-direction: column;
+        gap: 8px;
+        height: calc(100vh - 260px); /* trừ header + timeline */
+        overflow: hidden;
+    }
+
+    #map {
+        flex: none;
+        height: 55%;        /* map chiếm 55% */
+        min-height: 200px;
+    }
+
+    #info {
+        flex: 1;
+        height: auto;
+        overflow-y: auto;
+        padding-bottom: 40px;
+    }
+}
+
+/* ============================
+   LANDSCAPE MODE (mobile xoay ngang)
+============================ */
+@media (max-height: 480px) {
+    #map-info-wrapper {
+        flex-direction: row;
+    }
+    #map {
+        flex: 1;
+        height: auto;
+    }
+    #info {
+        flex: 1;
+    }
+}
