@@ -16,7 +16,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="back.css">
-<script defer src="back.js"></script>
+
 </head>
 
 <body>
@@ -24,6 +24,12 @@
 <header>
     <h1>Nơi lưu giữ kỷ niệm</h1>
     <h2>Cherry’s Family Journeys</h2>
+    <!-- VIEWER POPUP BEGIN -->
+<div id="headerViewer" class="hv-hidden">
+    <span id="hvClose">&times;</span>
+    <img id="hvImg" src="">
+</div>
+
 </header>
 
 <!-- TIMELINE -->
@@ -48,6 +54,7 @@
 </div>
 
 <!-- JS -->
+ <script defer src="back.js"></script>
 <script src="app.js"></script>
 <script src="main.js"></script>
 

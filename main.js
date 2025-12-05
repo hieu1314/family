@@ -30,40 +30,34 @@ let items = new vis.DataSet(
 const now = new Date();
 const isMobile = window.innerWidth <= 768;
 
-/* PC: 2.5 tháng trước → hôm nay */
-const pcStart = new Date(now);
-pcStart.setDate(now.getDate() - 75);
+/* Thời gian mặc định */
+const pcStart = new Date(now); pcStart.setDate(now.getDate() - 75); // 2.5 tháng trước
 const pcEnd = now;
 
-/* MOBILE: 20 ngày trước → 3 ngày sau */
-const mobileStart = new Date(now);
-mobileStart.setDate(now.getDate() - 20);
+const mobileStart = new Date(now); mobileStart.setDate(now.getDate() - 20); // 20 ngày trước
+const mobileEnd = new Date(now); mobileEnd.setDate(now.getDate() + 3);       // 3 ngày sau
 
-const mobileEnd = new Date(now);
-mobileEnd.setDate(now.getDate() + 3);
+function createTimeAxis() {
+    return {
+        scale: 'day',
+        step: 1,
+        format: {
+            minorLabels: date => date.toLocaleDateString("vi-VN"), // ngày nhỏ
+            majorLabels: date => `Tháng ${date.getMonth() + 1}`   // tháng
+        }
+    };
+}
 
 timeline = new vis.Timeline(
     document.getElementById("timeline"),
     items,
     {
         height: "100%",
-
         start: isMobile ? mobileStart : pcStart,
         end: isMobile ? mobileEnd : pcEnd,
-
-        locale: "vi",
-
-        zoomMin: 1000 * 60 * 60 * 24,            // 1 ngày
-        zoomMax: 1000 * 60 * 60 * 24 * 120,      // max 4 tháng
-
-        timeAxis: {
-            scale: 'day',
-            step: 1,
-            format: {
-                minorLabels: date => date.toLocaleDateString("vi-VN"),
-                majorLabels: date => `Tháng ${date.getMonth() + 1}`
-            }
-        }
+        zoomMin: 1000 * 60 * 60 * 24,          // 1 ngày
+        zoomMax: 1000 * 60 * 60 * 24 * 120,    // 4 tháng
+        timeAxis: createTimeAxis()
     }
 );
 
@@ -73,59 +67,29 @@ timeline.on("select", props => {
     if (ev) openViewer(ev.images);
 });
 
-// MOBILE: ép lại cửa sổ để chắc chắn hiển thị đúng
+// Ép lại cửa sổ timeline trên mobile
 if (isMobile) {
     requestAnimationFrame(() => {
         timeline.setWindow(mobileStart, mobileEnd, { animation: false });
     });
 }
 
-// NÚT NOW: 10 ngày trước → 3 ngày sau
+// NÚT NOW
 document.getElementById("nowBtn").addEventListener("click", () => {
     const now = new Date();
 
+    let start, end;
+
     if (!isMobile) {
-        /* PC → NOW = 10 ngày trước → 3 ngày sau */
-        const start = new Date(now);
-        start.setDate(now.getDate() - 10);
-
-        const end = new Date(now);
-        end.setDate(now.getDate() + 3);
-
-        timeline.setOptions({
-            timeAxis: {
-                scale: 'day',
-                step: 1,
-                format: {
-                    minorLabels: d => d.toLocaleDateString("vi-VN"),
-                    majorLabels: d => `Tháng ${d.getMonth() + 1}`
-                }
-            }
-        });
-
-        timeline.setWindow(start, end, { animation: true });
-
+        start = new Date(now); start.setDate(now.getDate() - 10); // PC: 10 ngày trước
+        end = new Date(now); end.setDate(now.getDate() + 3);      // 3 ngày sau
     } else {
-        /* MOBILE → NOW = 7 ngày trước → 3 ngày sau */
-        const start = new Date(now);
-        start.setDate(now.getDate() - 7);
-
-        const end = new Date(now);
-        end.setDate(now.getDate() + 3);
-
-        timeline.setOptions({
-            timeAxis: {
-                scale: 'day',
-                step: 1,
-                format: {
-                    minorLabels: d => d.toLocaleDateString("vi-VN"),
-                    majorLabels: d => `Tháng ${d.getMonth() + 1}`
-                }
-            }
-        });
-
-        timeline.setWindow(start, end, { animation: true });
+        start = new Date(now); start.setDate(now.getDate() - 7);  // Mobile: 7 ngày trước
+        end = new Date(now); end.setDate(now.getDate() + 3);      // 3 ngày sau
     }
+
+    timeline.setOptions({ timeAxis: createTimeAxis() });
+    timeline.setWindow(start, end, { animation: true });
 });
 
 /* ---- MAP ---- */
