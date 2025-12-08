@@ -163,27 +163,59 @@ window.openViewerFromMap = function(id){
 };
 
 /* ---------------------- VIEWER ---------------------- */
-function openViewer(images){
+function openViewer(files) {
     const viewer = document.getElementById("viewer");
     const img = document.getElementById("viewerImg");
+
+    // Thêm video element tĩnh trong viewer (HTML vẫn giữ nguyên viewer)
+    let video = document.getElementById("viewerVideo");
+    if (!video) {
+        video = document.createElement("video");
+        video.id = "viewerVideo";
+        video.controls = true;
+        video.style.maxWidth = "90%";
+        video.style.maxHeight = "80vh";
+        video.style.display = "none"; // mặc định ẩn
+        const viewerContent = document.getElementById("viewer");
+        viewerContent.appendChild(video);
+    }
+
     let index = 0;
 
-    img.src = images[index];
+    function showFile(i) {
+        const file = files[i];
+        if (!file) return;
+
+        if (file.endsWith(".mp4")) {
+            // hiển thị video
+            video.src = file;
+            video.style.display = "block";
+            img.style.display = "none";
+        } else {
+            // hiển thị hình ảnh
+            img.src = file;
+            img.style.display = "block";
+            video.style.display = "none";
+        }
+    }
+
+    showFile(index);
     viewer.classList.remove("hidden");
 
     document.getElementById("prevImg").onclick = () => {
-        index = (index - 1 + images.length) % images.length;
-        img.src = images[index];
+        index = (index - 1 + files.length) % files.length;
+        showFile(index);
     };
 
     document.getElementById("nextImg").onclick = () => {
-        index = (index + 1) % images.length;
-        img.src = images[index];
+        index = (index + 1) % files.length;
+        showFile(index);
     };
 
     window.closeViewer = () => viewer.classList.add("hidden");
 }
 
+/* ---------------------- FORMAT DATE ---------------------- */
 function formatDate(d){
     return new Date(d).toLocaleDateString("vi-VN");
 }
