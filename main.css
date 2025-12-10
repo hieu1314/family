@@ -67,6 +67,33 @@ header h2 {
     border: 2px solid #eee;
 }
 
+#map {
+    position: relative; /* để overlay đè lên */
+}
+
+/* Lớp che bản đồ */
+#mapCover {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;          /* nằm trên map */
+}
+
+#mapCover img {
+    height: 100%;          /* VỪA ĐÚNG chiều cao khung map */
+    width: auto;           /* Giữ tỷ lệ ảnh */
+    object-fit: contain;   /* Không bị méo, không tràn */
+    opacity: 0.9;
+    pointer-events: none;
+}
+/* Khi ẩn */
+#mapCover.hidden {
+    display: none;
+}
+
 /* INFO */
 #info {
     flex: 1;
@@ -96,6 +123,7 @@ header h2 {
     line-height: 1.3em;
     white-space: pre-line; /* cho xuống dòng nếu cần */
 }
+
 
 
 /* VIEWER */

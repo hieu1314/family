@@ -63,6 +63,7 @@ timeline = new vis.Timeline(
 
 // Mở hình khi click event
 timeline.on("select", props => {
+     hideMapCover();   // <-- thêm dòng này
     const ev = allEvents.find(e => e.id === props.items[0]);
     if (ev) openViewer(ev.images);
 });
@@ -124,6 +125,7 @@ window.updateInfo = function(events){
 
         /* Click tổng → zoom map */
         div.addEventListener("click", () => {
+                hideMapCover();   // <-- thêm dòng này
             map.setView([ev.lat, ev.lng], 13, { animate:true });
         });
 
@@ -220,3 +222,8 @@ function formatDate(d){
     return new Date(d).toLocaleDateString("vi-VN");
 }
 
+
+function hideMapCover() {
+    const cover = document.getElementById("mapCover");
+    if (cover) cover.classList.add("hidden");
+}
