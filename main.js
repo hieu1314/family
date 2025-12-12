@@ -57,7 +57,8 @@ timeline = new vis.Timeline(
         end: isMobile ? mobileEnd : pcEnd,
         zoomMin: 1000 * 60 * 60 * 24,          // 1 ngày
         zoomMax: 1000 * 60 * 60 * 24 * 120,    // 4 tháng
-        timeAxis: createTimeAxis()
+        timeAxis: createTimeAxis(),
+         locale: "vi"
     }
 );
 
