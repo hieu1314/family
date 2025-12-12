@@ -83,11 +83,12 @@ header h2 {
 }
 
 #mapCover img {
-    height: 100%;          /* VỪA ĐÚNG chiều cao khung map */
-    width: auto;           /* Giữ tỷ lệ ảnh */
-    object-fit: contain;   /* Không bị méo, không tràn */
+    height: 100%;
+    width: auto;
+    object-fit: contain;
     opacity: 0.9;
-    pointer-events: none;
+    pointer-events: auto; /* <-- sửa từ none thành auto */
+    cursor: pointer;      /* con trỏ thành tay */
 }
 /* Khi ẩn */
 #mapCover.hidden {

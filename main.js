@@ -106,9 +106,19 @@ map.setView([10.7769, 106.7009], 9);  // 12 là mức zoom, có thể tăng/gi�
 
     updateMap(allEvents);
     updateInfo(allEvents);
+
+    // Thêm sự kiện click cho hình ở mapCover
+const mapCoverImg = document.querySelector("#mapCover img");
+if (mapCoverImg) {
+    mapCoverImg.style.cursor = "pointer"; // Thay đổi con trỏ chuột khi hover
+    mapCoverImg.addEventListener("click", () => {
+        hideMapCover(); // Ẩn lớp phủ mapCover
+        openViewer(["images/vietnam.jpg"]); // Mở popup xem đúng tấm hình này
+    });
+}
+
 });
 
-/* ---------------------- INFO PANEL ---------------------- */
 /* ---------------------- INFO PANEL ---------------------- */
 window.updateInfo = function(events){
     // Sắp xếp theo ngày mới nhất
