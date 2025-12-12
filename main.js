@@ -119,7 +119,10 @@ window.updateInfo = function(events){
       div.innerHTML = `
     <div><b>${ev.title}</b></div>
     <div>${formatDate(ev.date)}</div>
-    <div class="note">${ev.note || ""}</div>
+   <div class="note">
+    <span class="text-ukraine">${ev.ukText || ""}</span>
+    <span class="text-vn">${ev.note || ""}</span>
+</div>
     <button class="showBtn">Xem hình</button>
 `;
 
