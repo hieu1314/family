@@ -108,7 +108,9 @@ map.setView([10.7769, 106.7009], 9);  // 12 là mức zoom, có thể tăng/gi�
 });
 
 /* ---------------------- INFO PANEL ---------------------- */
+/* ---------------------- INFO PANEL ---------------------- */
 window.updateInfo = function(events){
+    // Sắp xếp theo ngày mới nhất
     const sorted = [...events].sort((a,b)=> new Date(b.date)-new Date(a.date));
     infoContainer.innerHTML = "";
 
@@ -116,31 +118,60 @@ window.updateInfo = function(events){
         let div = document.createElement("div");
         div.className = "info-event";
 
-      div.innerHTML = `
-    <div><b>${ev.title}</b></div>
-    <div>${formatDate(ev.date)}</div>
-   <div class="note">
-    <span class="text-ukraine">${ev.ukText || ""}</span>
-    <span class="text-vn">${ev.note || ""}</span>
-</div>
-    <button class="showBtn">Xem hình</button>
-`;
+        // Tiêu đề + ngày
+        div.innerHTML = `<div><b>${ev.title}</b></div>
+                         <div>${formatDate(ev.date)}</div>`;
 
-        /* Click tổng → zoom map */
+        // Note
+        let noteDiv = document.createElement("div");
+        noteDiv.className = "note";
+
+        // Tiếng Ukraine
+        let ukSpan = document.createElement("span");
+        ukSpan.className = "text-ukraine";
+        ukSpan.textContent = ev.ukText || "";
+
+        // Tiếng Việt
+        let vnSpan = document.createElement("span");
+        vnSpan.className = "text-vn";
+        vnSpan.textContent = ev.note || "";
+
+        // Ẩn tiếng Ukraine trên mobile
+        if (window.innerWidth <= 768) ukSpan.style.display = "none";
+
+        // Thêm vào noteDiv
+        noteDiv.appendChild(ukSpan);
+        noteDiv.appendChild(vnSpan);
+
+        div.appendChild(noteDiv);
+
+        // Click tổng → zoom map
         div.addEventListener("click", () => {
-                hideMapCover();   // <-- thêm dòng này
+            hideMapCover();  
             map.setView([ev.lat, ev.lng], 13, { animate:true });
         });
 
-        /* Click nút xem hình */
-        div.querySelector(".showBtn").addEventListener("click", (e)=>{
+        // Nút xem hình
+        let btn = document.createElement("button");
+        btn.className = "showBtn";
+        btn.textContent = "Xem hình";
+        btn.addEventListener("click", (e)=>{
             e.stopPropagation();
             openViewer(ev.images);
         });
+        div.appendChild(btn);
 
         infoContainer.appendChild(div);
     });
-};
+}
+
+// Resize tự động ẩn/hiện tiếng Ukraine
+window.addEventListener("resize", () => {
+    document.querySelectorAll(".text-ukraine").forEach(el => {
+        el.style.display = window.innerWidth <= 768 ? "none" : "inline";
+    });
+});
+
 
 /* ---------------------- MAP ---------------------- */
 window.updateMap = function(events){
