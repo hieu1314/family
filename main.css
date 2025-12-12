@@ -243,9 +243,3 @@ header h2 {
     }
 }
 
-/* Ẩn text tiếng Ukraine trên mobile */
-@media (max-width: 768px) {
-    .text-ukraine {
-        display: none !important;
-    }
-}
