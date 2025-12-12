@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập - Cherry's Family</title>
+<style>
+body { font-family: Arial; background: linear-gradient(to bottom right, #d4fc79, #96e6a1); display:flex; justify-content:center; align-items:center; height:100vh; }
+.container { background:white; padding:40px 30px; border-radius:15px; box-shadow:0 8px 20px rgba(0,0,0,0.2); width:320px; text-align:center; }
+h2 { margin-bottom:25px; color:#2ed573; }
+input { width:100%; padding:12px 10px; margin:10px 0; border:1px solid #ccc; border-radius:8px; }
+button { width:100%; padding:12px; margin-top:15px; border:none; border-radius:8px; background:#2ed573; color:white; font-size:16px; cursor:pointer; transition:0.3s; }
+button:hover { background:#1eae51; }
+p { margin-top:15px; font-size:14px; }
+p a { color:#2ed573; text-decoration:none; }
+p a:hover { text-decoration:underline; }
+#msg { margin-top:10px; font-size:13px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Đăng nhập</h2>
+  <form id="loginForm">
+    <input id="loginEmail" type="email" placeholder="Email" required>
+    <input id="loginPassword" type="password" placeholder="Mật khẩu" required>
+    <button type="submit">Đăng nhập</button>
+  </form>
+  <p>Chưa có tài khoản? <a href="signup.html">Đăng ký</a></p>
+  <p id="msg"></p>
+</div>
+
+<script type="module">
+import { auth } from "./firebase-config.js";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+// Nếu đã login → chuyển thẳng index.html
+onAuthStateChanged(auth, user => {
+  if(user) window.location.href = "index.html";
+});
+
+const loginForm = document.getElementById("loginForm");
+const msg = document.getElementById("msg");
+
+loginForm.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+    msg.style.color = "green";
+    msg.innerText = "Đăng nhập thành công! Chuyển hướng…";
+    setTimeout(()=> window.location.href="index.html",1000);
+  }catch(err){
+    msg.style.color="red";
+    msg.innerText = err.message;
+    console.error(err);
+  }
+});
+</script>
+
+</body>
+</html>
