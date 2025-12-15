@@ -61,5 +61,24 @@ window.allEvents = [
             "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID3/23.jpg",
             "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID3/24.jpg"
         ]
+    },
+           {
+        id: 4,
+        title: "Let's Shine",
+        date: "2025-12-13",
+        lat: 10.767653, 
+        lng: 106.687965,
+        note: "Thiên phú âm nhạc của anh họ tôi đã bắt đầu 🎷🪗🎤",
+        images: [
+            "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID4/8.jpg",
+            "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID4/1.jpg",
+            "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID4/2.jpg",
+            "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID4/3.jpg",
+            "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID4/4.jpg",
+            "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID4/5.jpg",
+            "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID4/6.jpg",
+            "https://vaotrlttfbkoxnuimdnf.supabase.co/storage/v1/object/public/family-photos/events/eventID4/7.jpg"
+        ]
     }
+
 ];
