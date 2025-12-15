@@ -244,3 +244,36 @@ header h2 {
     }
 }
 
+/* ====== Hiệu ứng xoáy mở viewer ====== */
+@keyframes spinZoomIn {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+    }
+    70% {
+        transform: scale(1.05) rotate(540deg); /* gần đủ 1.5 vòng */
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(720deg);   /* đúng 2 vòng */
+        opacity: 1;
+    }
+}
+
+/* áp dụng cho ảnh + video trong viewer */
+#viewer img,
+#viewer video {
+    transform-origin: center;
+    animation: spinZoomIn 0.7s ease-out;
+}
+
+@keyframes viewerFade {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

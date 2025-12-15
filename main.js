@@ -262,6 +262,29 @@ function openViewer(files) {
     window.closeViewer = () => viewer.classList.add("hidden");
 }
 
+function showFile(i) {
+    const file = files[i];
+    if (!file) return;
+
+    // reset animation
+    img.style.animation = "none";
+    video.style.animation = "none";
+    void img.offsetWidth; // force reflow
+    void video.offsetWidth;
+
+    if (file.endsWith(".mp4")) {
+        video.src = file;
+        video.style.display = "block";
+        img.style.display = "none";
+        video.style.animation = "spinZoomIn 0.7s ease-out";
+    } else {
+        img.src = file;
+        img.style.display = "block";
+        video.style.display = "none";
+        img.style.animation = "spinZoomIn 0.7s ease-out";
+    }
+}
+
 /* ---------------------- FORMAT DATE ---------------------- */
 function formatDate(d){
     return new Date(d).toLocaleDateString("vi-VN");
