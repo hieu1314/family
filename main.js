@@ -165,7 +165,8 @@ window.updateInfo = function(events){
         // Nút xem hình
         let btn = document.createElement("button");
         btn.className = "showBtn";
-        btn.textContent = "Xem hình";
+btn.innerHTML = "📷"; // icon máy ảnh
+btn.title = "Xem hình";
         btn.addEventListener("click", (e)=>{
             e.stopPropagation();
             openViewer(ev.images);

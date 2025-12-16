@@ -124,8 +124,12 @@ header h2 {
     line-height: 1.3em;
     white-space: pre-line; /* cho xuống dòng nếu cần */
 }
-
-
+.showBtn {
+    font-size: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
 
 /* VIEWER */
 #viewer {
