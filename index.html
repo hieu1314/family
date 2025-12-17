@@ -63,6 +63,18 @@
 <script src="app.js"></script>
 <script src="main.js"></script>
 
+
+<!-- STAR LAYER -->
+<div id="star-layer"></div>
+
+<!-- VIEWER -->
+<div id="viewer" class="hidden">
+  <span class="close" onclick="closeViewer()">×</span>
+  <button id="prevImg">&#10094;</button>
+  <img id="viewerImg">
+  <button id="nextImg">&#10095;</button>
+</div>
+
 <!-- Kiểm tra đăng nhập -->
 <script type="module">
 import { auth } from "./firebase-config.js";
@@ -76,6 +88,7 @@ onAuthStateChanged(auth, user => {
   }
 });
 </script>
+
 
 </body>
 </html>

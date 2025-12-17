@@ -281,3 +281,53 @@ header h2 {
         transform: scale(1);
     }
 }
+
+/* ===== STAR LIGHT ===== */
+#star-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.flying-star {
+  position: absolute;
+
+  /* TO HƠN */
+  width: 32px;
+  height: 32px;
+
+  border-radius: 50%;
+  pointer-events: auto;
+
+  /* ánh sáng rõ + lan rộng */
+  background: radial-gradient(
+    circle,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,0.9) 30%,
+    rgba(255,255,255,0.5) 55%,
+    rgba(255,255,255,0.15) 70%,
+    transparent 85%
+  );
+
+  /* vùng click rộng hơn mắt thấy */
+  box-shadow:
+    0 0 25px rgba(255,255,255,0.9),
+    0 0 60px rgba(255,255,255,0.6);
+
+  transition: all linear;
+  cursor: pointer;
+}
+
+
+.flying-star.twinkle {
+  animation: twinkle 1s infinite;
+}
+
+@keyframes twinkle {
+  0%,100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+
