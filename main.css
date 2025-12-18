@@ -140,7 +140,7 @@ header h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 9000;
 }
 #viewer.hidden {
     display: none;
@@ -287,7 +287,7 @@ header h2 {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 9000;
   overflow: hidden;
 }
 
@@ -338,5 +338,43 @@ header h2 {
     box-shadow:
       0 0 15px rgba(255,255,255,0.8),
       0 0 35px rgba(255,255,255,0.5);
+  }
+}
+
+/* Nút xoay góc trái dưới */
+.rotate-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #ff6a88, #ff99ac);
+  color: white;
+  font-size: 28px;
+  text-align: center;
+  line-height: 60px;
+  border-radius: 50%;
+  text-decoration: none;
+  z-index: 6000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+
+  animation: spin 6s linear infinite;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+/* Hover */
+.rotate-btn:hover {
+  animation-play-state: paused;
+  transform: scale(1.15);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+/* Animation xoay */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
