@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Maze 25x25 Auto-move</title>
+<style>
+html, body { 
+    margin:0; padding:0; height:100%; overflow:hidden; 
+    background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+canvas { display:block; background:#000; margin-top:10px; }
+#undoBtn {
+    margin-top:10px;
+    padding:8px 14px;
+    background:#222; color:#fff;
+    border:none;
+    cursor:pointer;
+    font-size:16px;
+    border-radius:5px;
+}
+#undoBtn:hover { background:#555; }
+</style>
+</head>
+<body>
+<canvas id="mazeCanvas"></canvas>
+<button id="undoBtn">⟳</button>
+<script>
+const canvas = document.getElementById("mazeCanvas");
+const ctx = canvas.getContext("2d");
+
+const ROWS = 25;
+const COLS = 25;
+const TILE = 25;
+canvas.width = COLS * TILE;
+canvas.height = ROWS * TILE;
+
+let maze = [];
+let player = {x:0, y:0};
+let exit = {x:COLS-1, y:ROWS-1};
+let prevPos = null;
+
+// Maze generator
+function initMaze() {
+    maze = Array.from({length:ROWS},()=>Array(COLS).fill(1));
+
+    function carve(x,y){
+        maze[y][x]=0;
+        let dirs = [[0,-1],[1,0],[0,1],[-1,0]].sort(()=>Math.random()-0.5);
+        for(let [dx,dy] of dirs){
+            let nx = x + dx*2;
+            let ny = y + dy*2;
+            if(nx>=0 && nx<COLS && ny>=0 && ny<ROWS && maze[ny][nx]===1){
+                maze[y+dy][x+dx]=0;
+                carve(nx,ny);
+            }
+        }
+    }
+
+    carve(0,0);
+    player = {x:0, y:0};
+    exit = {x:COLS-1, y:ROWS-1};
+    maze[exit.y][exit.x] = 0;
+}
+
+function drawMaze(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const radius = 5;
+
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    for(let y=Math.max(0,player.y-radius); y<=Math.min(ROWS-1,player.y+radius); y++){
+        for(let x=Math.max(0,player.x-radius); x<=Math.min(COLS-1,player.x+radius); x++){
+            let dx = x - player.x;
+            let dy = y - player.y;
+            if(Math.sqrt(dx*dx + dy*dy)<=radius){
+                ctx.fillStyle = maze[y][x]===1?"#000":"#666";
+                ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+            }
+        }
+    }
+
+    // Player
+    ctx.fillStyle="yellow";
+    ctx.beginPath();
+    ctx.arc(player.x*TILE+TILE/2, player.y*TILE+TILE/2, TILE/2.5,0,Math.PI*2);
+    ctx.fill();
+
+    // Exit
+    ctx.fillStyle="lime";
+    ctx.beginPath();
+    ctx.arc(exit.x*TILE+TILE/2, exit.y*TILE+TILE/2, TILE/2.5,0,Math.PI*2);
+    ctx.fill();
+}
+
+// Kiểm tra số lối đi từ ô hiện tại
+function availableDirs(x,y){
+    let dirs = [];
+    if(y>0 && maze[y-1][x]===0) dirs.push([0,-1]);
+    if(y<ROWS-1 && maze[y+1][x]===0) dirs.push([0,1]);
+    if(x>0 && maze[y][x-1]===0) dirs.push([-1,0]);
+    if(x<COLS-1 && maze[y][x+1]===0) dirs.push([1,0]);
+    return dirs;
+}
+
+// Auto move đến khi gặp ngã rẽ
+function move(dx,dy){
+    prevPos = {x:player.x, y:player.y}; // lưu undo
+    function step(){
+        let nx = player.x + dx;
+        let ny = player.y + dy;
+        if(nx>=0 && nx<COLS && ny>=0 && ny<ROWS && maze[ny][nx]===0){
+            player.x = nx;
+            player.y = ny;
+            drawMaze();
+            if(player.x===exit.x && player.y===exit.y){
+                setTimeout(()=>window.location.href="index.html",200);
+                return;
+            }
+            // Kiểm tra số lối đi
+            let dirs = availableDirs(player.x,player.y);
+            if(dirs.length===2){ // đường thẳng không rẽ
+                setTimeout(step,100); // lướt chậm
+            }
+        }
+    }
+    step();
+}
+
+// Undo
+document.getElementById("undoBtn").addEventListener("click",()=>{
+    if(prevPos){
+        player.x = prevPos.x;
+        player.y = prevPos.y;
+        drawMaze();
+    }
+});
+
+document.addEventListener("keydown", e=>{
+    switch(e.key){
+        case "ArrowUp": move(0,-1); break;
+        case "ArrowDown": move(0,1); break;
+        case "ArrowLeft": move(-1,0); break;
+        case "ArrowRight": move(1,0); break;
+    }
+});
+
+initMaze();
+drawMaze();
+</script>
+</body>
+</html>
