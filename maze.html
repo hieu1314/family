@@ -2,17 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Maze 25x25 Auto-move</title>
+<title>Maze Auto-move Final</title>
 <style>
 html, body { 
     margin:0; padding:0; height:100%; overflow:hidden; 
-    background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:#000;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
 }
-canvas { display:block; background:#000; margin-top:10px; }
+canvas { 
+    display:block; 
+    background:#000; 
+    margin-top:10px;
+}
 #undoBtn {
     margin-top:10px;
     padding:8px 14px;
-    background:#222; color:#fff;
+    background:#222; 
+    color:#fff;
     border:none;
     cursor:pointer;
     font-size:16px;
@@ -21,25 +30,29 @@ canvas { display:block; background:#000; margin-top:10px; }
 #undoBtn:hover { background:#555; }
 </style>
 </head>
+
 <body>
 <canvas id="mazeCanvas"></canvas>
 <button id="undoBtn">⟳</button>
+
 <script>
 const canvas = document.getElementById("mazeCanvas");
 const ctx = canvas.getContext("2d");
 
-const ROWS = 25;
-const COLS = 25;
-const TILE = 25;
+/* ===== CONFIG ===== */
+const ROWS = 29;
+const COLS = 29;
+const TILE = 24;
 canvas.width = COLS * TILE;
 canvas.height = ROWS * TILE;
 
+/* ===== STATE ===== */
 let maze = [];
 let player = {x:0, y:0};
 let exit = {x:COLS-1, y:ROWS-1};
 let prevPos = null;
 
-// Maze generator
+/* ===== MAZE GEN ===== */
 function initMaze() {
     maze = Array.from({length:ROWS},()=>Array(COLS).fill(1));
 
@@ -56,44 +69,181 @@ function initMaze() {
         }
     }
 
-    carve(0,0);
-    player = {x:0, y:0};
-    exit = {x:COLS-1, y:ROWS-1};
-    maze[exit.y][exit.x] = 0;
+carve(0,0);
+addLongTraps(6, 6, 12);
+addCurvedTraps(6, 7, 14); // ← BẪY CONG
+player = {x:0, y:0};
+
+exit = {x:COLS-1, y:ROWS-1};
+maze[exit.y][exit.x] = 0; // luôn có exit
+twistExitPath(); 
+
+}
+function addLongTraps(count = 8, minLen = 5, maxLen = 10){
+    for(let i=0;i<count;i++){
+        let x,y;
+        do{
+            x = Math.floor(Math.random()*COLS);
+            y = Math.floor(Math.random()*ROWS);
+        }while(maze[y][x]!==0 || availableDirs(x,y).length !== 1);
+
+        let [dx,dy] = availableDirs(x,y)[0];
+        let len = minLen + Math.floor(Math.random()*(maxLen-minLen));
+
+        let cx = x, cy = y;
+        for(let j=0;j<len;j++){
+            let nx = cx + dx;
+            let ny = cy + dy;
+            if(nx<1||nx>=COLS-1||ny<1||ny>=ROWS-1) break;
+            if(maze[ny][nx]===0) break;
+
+            maze[ny][nx] = 0;
+            cx = nx;
+            cy = ny;
+        }
+    }
+}
+function addCurvedTraps(count = 6, minLen = 7, maxLen = 14){
+    const DIRS = [
+        [0,-1],[1,0],[0,1],[-1,0]
+    ];
+
+    for(let i=0;i<count;i++){
+        let x,y;
+        do{
+            x = Math.floor(Math.random()*COLS);
+            y = Math.floor(Math.random()*ROWS);
+        }while(maze[y][x]!==0 || availableDirs(x,y).length !== 1);
+
+        let [dx,dy] = availableDirs(x,y)[0];
+        let len = minLen + Math.floor(Math.random()*(maxLen-minLen));
+        let turns = 2 + Math.floor(Math.random()*3); // 2–4 lần rẽ
+
+        let cx = x, cy = y;
+        let cdx = dx, cdy = dy;
+
+        for(let step=0; step<len; step++){
+            let nx = cx + cdx;
+            let ny = cy + cdy;
+
+            if(nx<1||nx>=COLS-1||ny<1||ny>=ROWS-1) break;
+            if(maze[ny][nx]===0) break;
+
+            maze[ny][nx] = 0;
+            cx = nx;
+            cy = ny;
+
+            // rẽ hướng ngẫu nhiên
+            if(turns>0 && Math.random()<0.3){
+                let choices = DIRS.filter(d =>
+                    !(d[0]===cdx && d[1]===cdy) &&
+                    !(d[0]===-cdx && d[1]===-cdy)
+                );
+                let pick = choices[Math.floor(Math.random()*choices.length)];
+                cdx = pick[0];
+                cdy = pick[1];
+                turns--;
+            }
+        }
+    }
 }
 
+function twistExitPath(){
+    const dirs = [
+        [0,-1],[1,0],[0,1],[-1,0]
+    ];
+
+    let ex = exit.x;
+    let ey = exit.y;
+
+    // lấy các hướng đang là đường
+    let openDirs = dirs.filter(([dx,dy])=>{
+        let nx = ex + dx;
+        let ny = ey + dy;
+        return nx>=0 && nx<COLS && ny>=0 && ny<ROWS && maze[ny][nx]===0;
+    });
+
+    // nếu đã chỉ có 1 lối vào thì thôi
+    if(openDirs.length <= 1) return;
+
+    // giữ lại 1 lối vào duy nhất
+    let keep = openDirs[Math.floor(Math.random()*openDirs.length)];
+
+    openDirs.forEach(([dx,dy])=>{
+        if(dx===keep[0] && dy===keep[1]) return;
+        maze[ey+dy][ex+dx] = 1;
+    });
+
+    // bẻ cong đường vào
+    let ix = ex + keep[0];
+    let iy = ey + keep[1];
+
+    const sideDirs = dirs.filter(d =>
+        !(d[0]===keep[0] && d[1]===keep[1]) &&
+        !(d[0]===-keep[0] && d[1]===-keep[1])
+    );
+
+    let [sdx,sdy] = sideDirs[Math.floor(Math.random()*sideDirs.length)];
+    let sx = ix + sdx;
+    let sy = iy + sdy;
+
+    if(sx>=0 && sx<COLS && sy>=0 && sy<ROWS){
+        maze[sy][sx] = 0;
+    }
+}
+
+/* ===== DRAW ===== */
 function drawMaze(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    const radius = 5;
 
+    const radius = 3; // tầm nhìn hẹp hơn → map khó hơn
+
+    // nền tối
     ctx.fillStyle = "#000";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
+    // vẽ map trong tầm nhìn
     for(let y=Math.max(0,player.y-radius); y<=Math.min(ROWS-1,player.y+radius); y++){
         for(let x=Math.max(0,player.x-radius); x<=Math.min(COLS-1,player.x+radius); x++){
             let dx = x - player.x;
             let dy = y - player.y;
-            if(Math.sqrt(dx*dx + dy*dy)<=radius){
-                ctx.fillStyle = maze[y][x]===1?"#000":"#666";
+            if(Math.sqrt(dx*dx + dy*dy) <= radius){
+                ctx.fillStyle = maze[y][x]===1 ? "#000" : "#fff"; // đường trắng rõ
                 ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
             }
         }
     }
 
-    // Player
-    ctx.fillStyle="yellow";
-    ctx.beginPath();
-    ctx.arc(player.x*TILE+TILE/2, player.y*TILE+TILE/2, TILE/2.5,0,Math.PI*2);
-    ctx.fill();
-
-    // Exit
+    // exit
     ctx.fillStyle="lime";
     ctx.beginPath();
     ctx.arc(exit.x*TILE+TILE/2, exit.y*TILE+TILE/2, TILE/2.5,0,Math.PI*2);
     ctx.fill();
+
+    // player màu nổi
+    ctx.fillStyle = "#00ffd5"; // cyan nổi bật
+    ctx.beginPath();
+    ctx.arc(player.x*TILE+TILE/2, player.y*TILE+TILE/2, TILE/2.5,0,Math.PI*2);
+    ctx.fill();
+
+    // ===== VÒNG SÁNG ĐÈN PIN (GIẢM SÁNG, VÀNG-TRẮNG, LẬP LÒE) =====
+    let px = player.x*TILE + TILE/2;
+    let py = player.y*TILE + TILE/2;
+    let flicker = 0.9 + Math.random()*0.1;
+
+    let light = ctx.createRadialGradient(
+    px, py, TILE*2.2,
+    px, py, TILE*4.5*flicker
+);
+    light.addColorStop(0,"rgba(255,255,220,0.5)"); // lõi sáng
+    light.addColorStop(0.45,"rgba(255,235,180,0.35)"); // vàng nhạt
+    light.addColorStop(1,"rgba(0,0,0,0.55)"); // rìa tối
+
+    ctx.fillStyle = light;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 }
 
-// Kiểm tra số lối đi từ ô hiện tại
+/* ===== MOVE LOGIC ===== */
 function availableDirs(x,y){
     let dirs = [];
     if(y>0 && maze[y-1][x]===0) dirs.push([0,-1]);
@@ -103,9 +253,9 @@ function availableDirs(x,y){
     return dirs;
 }
 
-// Auto move đến khi gặp ngã rẽ
 function move(dx,dy){
-    prevPos = {x:player.x, y:player.y}; // lưu undo
+    prevPos = {x:player.x, y:player.y};
+
     function step(){
         let nx = player.x + dx;
         let ny = player.y + dy;
@@ -113,38 +263,40 @@ function move(dx,dy){
             player.x = nx;
             player.y = ny;
             drawMaze();
+
             if(player.x===exit.x && player.y===exit.y){
-                setTimeout(()=>window.location.href="index.html",200);
+                setTimeout(()=> {
+                    window.location.href = "index.html"; // trở về index.html
+                },200);
                 return;
             }
-            // Kiểm tra số lối đi
+
             let dirs = availableDirs(player.x,player.y);
-            if(dirs.length===2){ // đường thẳng không rẽ
-                setTimeout(step,100); // lướt chậm
+            if(dirs.length === 2){
+                setTimeout(step,70); // auto-move nhanh hơn
             }
         }
     }
     step();
 }
 
-// Undo
-document.getElementById("undoBtn").addEventListener("click",()=>{
+/* ===== INPUT ===== */
+document.addEventListener("keydown", e=>{
+    if(e.key==="ArrowUp") move(0,-1);
+    if(e.key==="ArrowDown") move(0,1);
+    if(e.key==="ArrowLeft") move(-1,0);
+    if(e.key==="ArrowRight") move(1,0);
+});
+
+document.getElementById("undoBtn").onclick = ()=>{
     if(prevPos){
         player.x = prevPos.x;
         player.y = prevPos.y;
         drawMaze();
     }
-});
+};
 
-document.addEventListener("keydown", e=>{
-    switch(e.key){
-        case "ArrowUp": move(0,-1); break;
-        case "ArrowDown": move(0,1); break;
-        case "ArrowLeft": move(-1,0); break;
-        case "ArrowRight": move(1,0); break;
-    }
-});
-
+/* ===== START ===== */
 initMaze();
 drawMaze();
 </script>
