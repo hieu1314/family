@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="back.css">
 
+      <link rel="stylesheet" href="chat.css">
+<script type="module" src="chat.js"></script>
+
 </head>
 
 <body>
@@ -88,6 +91,95 @@ onAuthStateChanged(auth, user => {
   }
 });
 </script>
+
+<button class="chat-floating-btn" id="chatToggleBtn" onclick="toggleChat()">💬</button>
+
+<div id="chatBox" class="chatbox">
+  <div class="chatbox-header" onclick="toggleChat()">Cherry’s Family Chat</div>
+
+  <div class="chatbox-body">
+
+    <div id="chatMessages" class="messages"></div>
+
+    <!-- Nhập tin nhắn -->
+    <div class="chat-input">
+      <input type="text" id="chatMessage" placeholder="Nhập tin nhắn..." autocomplete="off">
+      <button id="emojiBtn">😄</button>
+      <button onclick="sendMessage()">Gửi</button>
+    </div>
+
+    <!-- ================== EMOJI PANEL (đã sửa) ================== -->
+    <div id="emojiPanel" class="emoji-panel">
+
+      <!-- TAB BUTTONS -->
+      <div class="emoji-tabs">
+        <button onclick="openEmojiTab('tab-smileys')" class="emoji-tab active">😊</button>
+        <button onclick="openEmojiTab('tab-animals')" class="emoji-tab">🐶</button>
+        <button onclick="openEmojiTab('tab-food')" class="emoji-tab">🍔</button>
+        <button onclick="openEmojiTab('tab-travel')" class="emoji-tab">✈️</button>
+        <button onclick="openEmojiTab('tab-symbols')" class="emoji-tab">❤️</button>
+      </div>
+
+      <!-- TAB CONTENT: Smileys -->
+      <div id="tab-smileys" class="emoji-content show">
+        <span onclick="addEmoji('😀')">😀</span>
+        <span onclick="addEmoji('😁')">😁</span>
+        <span onclick="addEmoji('😂')">😂</span>
+        <span onclick="addEmoji('🤣')">🤣</span>
+        <span onclick="addEmoji('😃')">😃</span>
+        <span onclick="addEmoji('😄')">😄</span>
+        <span onclick="addEmoji('😅')">😅</span>
+        <span onclick="addEmoji('😉')">😉</span>
+        <span onclick="addEmoji('😊')">😊</span>
+      </div>
+
+      <!-- TAB CONTENT: Animals -->
+      <div id="tab-animals" class="emoji-content">
+        <span onclick="addEmoji('🐶')">🐶</span>
+        <span onclick="addEmoji('🐱')">🐱</span>
+        <span onclick="addEmoji('🐭')">🐭</span>
+        <span onclick="addEmoji('🐹')">🐹</span>
+        <span onclick="addEmoji('🐰')">🐰</span>
+        <span onclick="addEmoji('🦊')">🦊</span>
+        <span onclick="addEmoji('🐻')">🐻</span>
+        <span onclick="addEmoji('🐼')">🐼</span>
+      </div>
+
+      <!-- TAB CONTENT: Food -->
+      <div id="tab-food" class="emoji-content">
+        <span onclick="addEmoji('🍏')">🍏</span>
+        <span onclick="addEmoji('🍎')">🍎</span>
+        <span onclick="addEmoji('🍐')">🍐</span>
+        <span onclick="addEmoji('🍊')">🍊</span>
+        <span onclick="addEmoji('🍋')">🍋</span>
+        <span onclick="addEmoji('🍉')">🍉</span>
+        <span onclick="addEmoji('🍇')">🍇</span>
+      </div>
+
+      <!-- TAB CONTENT: Travel -->
+      <div id="tab-travel" class="emoji-content">
+        <span onclick="addEmoji('✈️')">✈️</span>
+        <span onclick="addEmoji('🚗')">🚗</span>
+        <span onclick="addEmoji('🚕')">🚕</span>
+        <span onclick="addEmoji('🚌')">🚌</span>
+        <span onclick="addEmoji('🏠')">🏠</span>
+        <span onclick="addEmoji('🏫')">🏫</span>
+      </div>
+
+      <!-- TAB CONTENT: Symbols -->
+      <div id="tab-symbols" class="emoji-content">
+        <span onclick="addEmoji('❤️')">❤️</span>
+        <span onclick="addEmoji('💖')">💖</span>
+        <span onclick="addEmoji('✨')">✨</span>
+        <span onclick="addEmoji('⭐')">⭐</span>
+        <span onclick="addEmoji('🔥')">🔥</span>
+        <span onclick="addEmoji('💯')">💯</span>
+      </div>
+
+    </div><!-- END EMOJI PANEL -->
+
+  </div>
+</div>
 
 
 </body>
