@@ -35,6 +35,17 @@
 
 </header>
 
+<!-- Góc trên bên phải -->
+<div id="userMenu" style="position:fixed; top:10px; right:10px; z-index:5000;">
+  <button id="userBtn"></button>
+  <div id="userDropdown" style="display:none; position:absolute; right:0; background:white; border:1px solid #ccc; border-radius:5px; box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+    <button id="changeNickBtn" style="display:block; width:100%; padding:8px; border:none; background:none; cursor:pointer;">Đổi tên hiển thị</button>
+    <button id="logoutBtn" style="display:block; width:100%; padding:8px; border:none; background:none; cursor:pointer;">Đăng xuất</button>
+  </div>
+</div>
+
+<script type="module" src="user.js"></script>
+
 <!-- TIMELINE -->
 <div id="timeline-wrapper" style="position: relative;">
     <div id="timeline"></div>

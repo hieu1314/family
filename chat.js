@@ -94,9 +94,12 @@ window.sendMessage = function () {
   const text = chatInput.value.trim();
   if (!text) return;
 
+  // lấy nickname từ localStorage nếu có
+  const nickname = localStorage.getItem("chatNickname") || currentUser.email;
+
   push(ref(db, "messages"), {
     uid: currentUser.uid,
-    name: currentUser.email, // 👉 LẤY EMAIL USER LOGIN
+    name: nickname,
     text: text,
     time: Date.now()
   });
@@ -137,3 +140,18 @@ const timeStr = d.toLocaleString("vi-VN", {
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 });
+
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    const nickname = localStorage.getItem("chatNickname"); // vẫn còn
+    const userBtn = document.getElementById("userBtn");
+    userBtn.textContent = nickname || user.email;
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+
+
