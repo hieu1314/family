@@ -5,7 +5,7 @@
 // Danh sách ảnh
 const base = "images/";
 const allImages = [];
-for (let i = 1; i <= 76; i++) allImages.push(`${i}.jpg`);
+for (let i = 1; i <= 80; i++) allImages.push(`${i}.jpg`);
 
 const isMobile = window.innerWidth < 768;
 let boxes = [];
