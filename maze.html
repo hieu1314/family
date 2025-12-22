@@ -99,8 +99,8 @@
     </head>
 
     <body>
-    <div id="title">Danh cho người kiên nhẫn và may mắn</div>
-    <div id="timer">Time: 77</div>
+    <div id="title">Kiên nhẫn và may mắn</div>
+    <div id="timer">Time: 90</div>
     <canvas id="mazeCanvas"></canvas>
     <button id="undoBtn">⟳</button>
     <div id="message" style="display:none;">Bạn kết thúc cuộc chơi!</div>
@@ -130,7 +130,7 @@
     let timerEl = document.getElementById("timer");
     let messageEl = document.getElementById("message");
 
-    let timeLeft = 77; // 90 giây
+    let timeLeft = 90; // 90 giây
     let timerInterval;
 let timerStarted = false;
 let revealAll = false;
@@ -521,7 +521,7 @@ document.getElementById("undoBtn").onclick = () => {
     /* ===== TIMER ===== */
     function startTimer(){
         clearInterval(timerInterval);
-        timeLeft = 77;
+        timeLeft = 90;
         timerEl.textContent = "Time: " + timeLeft+" giây";
 
         timerInterval = setInterval(()=>{
@@ -579,7 +579,7 @@ canvas.addEventListener('touchend', e => {
     initMaze();
     player = {x:0, y:0};
     drawMaze();
-    timerEl.textContent = "Time: 77 giây";
+    timerEl.textContent = "Time: 90 giây";
     timerStarted = false;
 }
 
