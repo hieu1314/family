@@ -91,15 +91,16 @@
 /* Các nút điều khiển */
 #controls {
     position: fixed;
-    bottom: 20px;   /* Đặt panel ở dưới cùng màn hình */
+    bottom: 20px;  /* Đặt panel ở dưới cùng màn hình */
     left: 50%;
-    transform: translateX(-50%); /* Căn giữa */
+    transform: translateX(-50%);  /* Căn giữa */
     z-index: 1000;
     display: flex;
-    justify-content: space-between; /* Đặt các phần tử cách đều nhau */
-    align-items: center;
+    justify-content: center;
+    flex-direction: column;  /* Đặt các phần tử theo chiều dọc */
     width: 100%;
-    max-width: 360px; /* Giới hạn chiều rộng của panel */
+    max-width: 450px;  /* Giới hạn chiều rộng của panel */
+    align-items: center;
 }
 /* Bố trí các nút di chuyển dọc (lên, xuống) */
 #verticalControls {
@@ -107,6 +108,7 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    height: 140px; /* Chiều cao của phần điều khiển dọc */
 }
 
 #verticalControls button {
@@ -129,7 +131,9 @@
 #horizontalControls {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    width: 100%;
+    margin-top: 10px; /* Khoảng cách giữa các nút ngang và dọc */
+    padding: 0 20px;  /* Thêm padding để tạo khoảng cách từ mép màn hình */
 }
 
 #horizontalControls button {
