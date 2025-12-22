@@ -70,6 +70,23 @@
 #controls button:hover {
     background-color: #555;
 }
+/* Các nút di chuyển dọc sẽ có chiều cao lớn hơn */
+#upBtn, #downBtn {
+    width: 60px;
+    height: 60px;
+}
+
+#leftBtn, #rightBtn {
+    width: 60px;
+    height: 60px;
+}
+
+/* Cập nhật CSS cho nút quay lại */
+#undoBtn {
+    width: 60px;
+    height: 60px;
+    font-size: 35px; /* Nút quay lại có thể hơi lớn hơn */
+}
 
 /* Các nút điều khiển */
 #controls {
@@ -108,7 +125,7 @@
     <div id="title">Kiên nhẫn và may mắn</div>
     <div id="timer">Time: 90</div>
     <canvas id="mazeCanvas"></canvas>
-    <button id="undoBtn">⟳</button>
+            <button id="undoBtn">⟳</button>
     <div id="message" style="display:none;">Bạn kết thúc cuộc chơi!</div>
  <!-- Các nút di chuyển (hiển thị chỉ trên mobile) -->
     <div id="controls">
@@ -116,6 +133,7 @@
         <button id="downBtn">↓</button>
         <button id="leftBtn">←</button>
         <button id="rightBtn">→</button>
+        <button id="undoBtn">⟳</button>
     </div>
 
     <script>
