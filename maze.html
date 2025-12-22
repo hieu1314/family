@@ -5,54 +5,96 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Maze Auto-move Final</title>
     <style>
-    html, body { 
-        margin:0; padding:0; height:100%; overflow:hidden; 
-        background:#000;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:flex-start;
-        color:#fff;
-        font-family:sans-serif;
+  html, body {
+            margin:0; padding:0; height:100%; overflow:hidden;
+            background:#000;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:flex-start;
+            color:#fff;
+            font-family:sans-serif;
+        }
+        body { touch-action: none; }
+        canvas {
+            width: 90vw;
+            height: auto;
+            max-width: 744px;
+        }
+        canvas {
+            display:block;
+            background:#000;
+            margin-top:10px;
+        }
+        #undoBtn {
+            margin-top:10px;
+            padding:8px 14px;
+            background:#222;
+            color:#fff;
+            border:none;
+            cursor:pointer;
+            font-size:16px;
+            border-radius:5px;
+        }
+        #undoBtn:hover { background:#555; }
+        #title {
+            font-size:24px;
+            font-weight:bold;
+            margin-top:10px;
+        }
+        #timer {
+            font-size:20px;
+            margin-top:4px;
+        }
+        #message {
+            font-size:26px;
+            font-weight:bold;
+            color:yellow;
+            position:absolute;
+            top:40%;
+        }
+/* Các nút điều khiển */
+#controls button {
+    padding: 15px 20px;
+    font-size: 20px;
+    margin: 5px;
+    background-color: #333;
+    color: white;
+    border: 2px solid #444;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#controls button:hover {
+    background-color: #555;
+}
+
+/* Các nút điều khiển */
+#controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Ẩn các nút di chuyển trên PC, chỉ hiển thị trên mobile */
+@media (max-width: 768px) {
+    #controls {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
     }
-    body { touch-action: none; }
-    canvas {
-        width: 90vw;
-        height: auto;
-        max-width: 744px;
+}
+
+@media (min-width: 769px) {
+    #controls {
+        display: none; /* Ẩn các nút di chuyển trên màn hình lớn */
     }
-    canvas { 
-        display:block; 
-        background:#000; 
-        margin-top:10px;
-    }
-    #undoBtn {
-        margin-top:10px;
-        padding:8px 14px;
-        background:#222; 
-        color:#fff;
-        border:none;
-        cursor:pointer;
-        font-size:16px;
-        border-radius:5px;
-    }
-    #undoBtn:hover { background:#555; }
-    #title {
-        font-size:24px;
-        font-weight:bold;
-        margin-top:10px;
-    }
-    #timer {
-        font-size:20px;
-        margin-top:4px;
-    }
-    #message {
-        font-size:26px;
-        font-weight:bold;
-        color:yellow;
-        position:absolute;
-        top:40%;
-    }
+}
     </style>
     </head>
 
@@ -62,6 +104,15 @@
     <canvas id="mazeCanvas"></canvas>
     <button id="undoBtn">⟳</button>
     <div id="message" style="display:none;">Bạn kết thúc cuộc chơi!</div>
+ <!-- Các nút di chuyển (hiển thị chỉ trên mobile) -->
+    <div id="controls">
+        <button id="upBtn">↑</button>
+        <button id="downBtn">↓</button>
+    </div>
+    <div id="controls">
+        <button id="leftBtn">←</button>
+        <button id="rightBtn">→</button>
+    </div>
 
     <script>
     const canvas = document.getElementById("mazeCanvas");
@@ -85,6 +136,56 @@
     let timerInterval;
 let timerStarted = false;
 let revealAll = false;
+
+// === CHỐNG DÍNH 2 Ô ===
+function countOpenNeighbors(x,y){
+    let c = 0;
+    for(let [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+        let nx = x+dx, ny = y+dy;
+        if(inBounds(nx,ny) && maze[ny][nx]===0) c++;
+    }
+    return c;
+}
+// === NỐI DEAD-END GẦN EXIT VÀO NHÁNH GIẢ ===
+function connectLonelyNearExit(){
+    const MAX_DIST = 5; // bán kính quanh exit
+    let candidates = [];
+
+    for(let y=exit.y-MAX_DIST; y<=exit.y+MAX_DIST; y++){
+        for(let x=exit.x-MAX_DIST; x<=exit.x+MAX_DIST; x++){
+            if(!inBounds(x,y)) continue;
+            if(maze[y][x]!==0) continue;
+
+            // dead-end thật
+            if(countOpenNeighbors(x,y) !== 1) continue;
+
+            candidates.push({x,y});
+        }
+    }
+
+    if(!candidates.length) return;
+
+    let dead = shuffle(candidates)[0];
+
+    // tìm fake path gần nhất
+    for(let [dx,dy] of shuffle([[0,-1],[1,0],[0,1],[-1,0]])){
+        let bx = dead.x + dx*2;
+        let by = dead.y + dy*2;
+
+        if(!inBounds(bx,by)) continue;
+        if(maze[by][bx]!==0) continue;
+
+        // tránh đụng exit trực tiếp
+        if(Math.abs(bx-exit.x)+Math.abs(by-exit.y) <= 1) continue;
+
+        // chỉ nối nếu không tạo loop
+        if(countOpenNeighbors(dead.x+dx, dead.y+dy)===0){
+            maze[dead.y+dy][dead.x+dx] = 0;
+            break;
+        }
+    }
+}
+
     /* ===== MAZE GEN ===== */
     function initMaze() {
     // Bước 1: Khởi tạo mê cung ban đầu
@@ -95,9 +196,20 @@ let revealAll = false;
     player = {x:0,y:0};
 
     carveMainPath(0,0);
-    addDeadEnds();
-    getReachableFromPlayer()
-    sealExit();
+addDeadEnds();
+
+// fake branch
+let path = getPathFromStartToExit();
+let a = path[5];
+if(a) createFakeDeadEnd(a.x, a.y, 6);
+let b = path[20 + Math.floor(Math.random()*10)];
+if(b) createFakeDeadEnd(b.x, b.y, 7);
+
+// 🔥 QUAN TRỌNG
+sealExit();
+connectLonelyNearExit();
+
+getReachableFromPlayer();
 
      // đảm bảo lối ra cho player
     maze[0][0] = 0;
@@ -150,7 +262,9 @@ function carveDeadEnd(x,y,length=9){
     for(let i=0;i<length;i++){
         let nx=cx+dir[0]*2;
         let ny=cy+dir[1]*2;
+
         if(!inBounds(nx,ny) || maze[ny][nx]===0) break;
+        if(countOpenNeighbors(nx,ny) > 1) break; // ⭐ CHỐNG DÍNH
 
         maze[cy+dir[1]][cx+dir[0]] = 0;
         maze[ny][nx] = 0;
@@ -158,6 +272,7 @@ function carveDeadEnd(x,y,length=9){
         cx=nx; cy=ny;
     }
 }
+
 function addDeadEnds(){
     for(let y=1;y<ROWS;y+=2){
         for(let x=1;x<COLS;x+=2){
@@ -170,78 +285,94 @@ function addDeadEnds(){
 function sealExit() {
     let ex = exit.x;
     let ey = exit.y;
-    const neighbors = [[0,-1],[1,0],[0,1],[-1,0]];
+    const neighbors = [[0,-1], [1,0], [0,1], [-1,0]];
 
-    // 1️⃣ Đặt tường 1 ô quanh exit
-    for (let [dx,dy] of neighbors) {
+    // Đặt tường 1 ô quanh exit
+    for (let [dx, dy] of neighbors) {
         let x = ex + dx;
         let y = ey + dy;
-        if (inBounds(x,y)) maze[y][x] = 1;
+        if (inBounds(x, y)) maze[y][x] = 1;
     }
 
-    // 2️⃣ Chọn 1 hướng duy nhất làm lối chính từ đường chính đến exit
+    // Tạo lối chính từ đường chính đến exit (giữ choke point)
     let dirs = shuffle(neighbors);
     let mainDir = null;
-    for (let [dx,dy] of dirs) {
-        for (let i=1; i<=12; i++) {
-            let nx = ex + dx*i;
-            let ny = ey + dy*i;
-            if (inBounds(nx,ny) && maze[ny][nx]===0) {
-                // đào hành lang tới sát exit (chừa 1 ô cuối)
-                for (let j=i; j>=2; j--) {
-                    maze[ey + dy*j][ex + dx*j] = 0;
+    for (let [dx, dy] of dirs) {
+        for (let i = 1; i <= 12; i++) {
+            let nx = ex + dx * i;
+            let ny = ey + dy * i;
+            if (inBounds(nx, ny) && maze[ny][nx] === 0) {
+                for (let j = i; j >= 2; j--) {
+                    maze[ey + dy * j][ex + dx * j] = 0;
                 }
-                // duy nhất 1 lỗ thông vào exit
                 maze[ey + dy][ex + dx] = 0;
                 maze[ey][ex] = 0;
-                mainDir = [dx,dy];
+                mainDir = [dx, dy];
                 break;
             }
         }
         if (mainDir) break;
     }
 
-    // 3️⃣ Tạo nhánh giả xung quanh exit, nhưng tinh tế
-    for (let y=ey-3; y<=ey+3; y++) {
-        for (let x=ex-3; x<=ex+3; x++) {
-            if (!inBounds(x,y)) continue;
-            if (maze[y][x] !== 0) continue;
+    maze[exit.y][exit.x] = 0; // Bảo hiểm không bao giờ bít exit
+}
 
-            // đếm ô mở xung quanh
-            let open = 0;
-            for (let [dx,dy] of neighbors) {
-                let nx = x+dx, ny = y+dy;
-                if (inBounds(nx,ny) && maze[ny][nx]===0) open++;
-            }
+function createFakeDeadEnd(sx, sy, length){
+    const dirs = shuffle([[0,-1],[1,0],[0,1],[-1,0]]);
 
-            if (open === 1) {
-                let shuffled = shuffle(neighbors);
-                for (let [dx,dy] of shuffled) {
-                    let nx = x+dx, ny = y+dy;
-                    if (!inBounds(nx,ny) || maze[ny][nx]!==1) continue;
+    for(let [dx,dy] of dirs){
+        let bx = sx + dx*2;
+        let by = sy + dy*2;
 
-                    // ❌ không đục thẳng vào exit
-                    if (nx === ex && ny === ey) continue;
+        if(!inBounds(bx,by)) continue;
+        if(maze[by][bx]===0) continue;
+        if(countOpenNeighbors(bx,by)>0) continue;
 
-                    // ❌ không đục vào ô sát exit (choke point)
-                    if (Math.abs(nx - ex) + Math.abs(ny - ey) === 1) continue;
+        // ⭐ chỉ 1 choke point
+        maze[sy+dy][sx+dx] = 0;
+        maze[by][bx] = 0;
 
-                    // ✅ không tạo nhánh giả khi player đã gần exit (≤3 ô)
-                    let distPlayerToExit = Math.abs(player.x - ex) + Math.abs(player.y - ey);
-                    if (distPlayerToExit <= 3) continue;
+        let cx=bx, cy=by;
+        for(let i=0;i<length;i++){
+            let d2 = shuffle([[0,-1],[1,0],[0,1],[-1,0]])[0];
+            let nx=cx+d2[0]*2;
+            let ny=cy+d2[1]*2;
 
-                    // ✅ chỉ tạo nhánh giả xa exit ít nhất 4 ô nhưng ≤8 ô
-                    let distToExit = Math.abs(nx - ex) + Math.abs(ny - ey);
-                    if (distToExit < 4 || distToExit > 8) continue;
+            if(!inBounds(nx,ny)) break;
+            if(maze[ny][nx]===0) break;
+            if(countOpenNeighbors(nx,ny)>1) break;
 
-                    maze[ny][nx] = 0;
-                    break;
-                }
-            }
+            maze[cy+d2[1]][cx+d2[0]] = 0;
+            maze[ny][nx] = 0;
+            cx=nx; cy=ny;
         }
+        break; // ❗ chỉ 1 nhánh
     }
 }
 
+// Hàm lấy mảng các ô đường chính từ player → exit
+function getPathFromStartToExit(){
+    // BFS hoặc DFS để tìm 1 đường đơn giản từ start → exit
+    let queue = [{x:0,y:0,path:[{x:0,y:0}]}];
+    let visited = Array.from({length:ROWS},()=>Array(COLS).fill(false));
+    visited[0][0]=true;
+
+    while(queue.length){
+        let curr = queue.shift();
+        if(curr.x===exit.x && curr.y===exit.y) return curr.path;
+
+        for(let [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+            let nx = curr.x + dx;
+            let ny = curr.y + dy;
+            if(!inBounds(nx,ny)) continue;
+            if(maze[ny][nx]!==0) continue;
+            if(visited[ny][nx]) continue;
+            visited[ny][nx]=true;
+            queue.push({x:nx,y:ny,path:[...curr.path,{x:nx,y:ny}]});
+        }
+    }
+    return [{x:0,y:0}]; // fallback
+}
 
 function getReachableFromPlayer(){
     let visited = Array.from({length: ROWS}, () => Array(COLS).fill(false));
@@ -263,40 +394,6 @@ function getReachableFromPlayer(){
         }
     }
     return visited;
-}
-function addFakeBranchNearExit() {
-    let ex = exit.x;
-    let ey = exit.y;
-
-    // 1. Xác định điểm trên đường chính cách exit ít nhất 8 ô
-    let mainPathPoint = null;
-    for (let y = ey; y >= 0; y--) {
-        if (maze[y][ex] === 0) {
-            let dist = Math.abs(y - ey) + Math.abs(ex - ex);
-            if (dist >= 8) {
-                mainPathPoint = {x: ex, y: y};
-                break;
-            }
-        }
-    }
-    if (!mainPathPoint) return;
-
-    // 2. Tạo nhánh giả từ mainPathPoint
-    let dirs = shuffle([[1,0],[-1,0],[0,1],[0,-1]]);
-    for (let [dx,dy] of dirs) {
-        let branchLength = 3 + Math.floor(Math.random()*5); // 3-7 ô giả
-        let cx = mainPathPoint.x;
-        let cy = mainPathPoint.y;
-        for (let i=0; i<branchLength; i++) {
-            let nx = cx + dx;
-            let ny = cy + dy;
-            if (!inBounds(nx,ny) || maze[ny][nx]===0) break;
-            maze[ny][nx] = 0;
-            cx = nx;
-            cy = ny;
-        }
-        break; // chỉ tạo 1 nhánh giả
-    }
 }
 
     /* ===== DRAW ===== */
@@ -402,15 +499,6 @@ function addFakeBranchNearExit() {
         }
         step();
     }
-    function countOpenNeighbors(x,y){
-        let c = 0;
-        if(maze[y-1] && maze[y-1][x] === 0) c++;
-        if(maze[y+1] && maze[y+1][x] === 0) c++;
-        if(maze[y][x-1] === 0) c++;
-        if(maze[y][x+1] === 0) c++;
-        return c;
-    }
-
 
     /* ===== INPUT ===== */
     document.addEventListener("keydown", e=>{
@@ -420,13 +508,18 @@ function addFakeBranchNearExit() {
         if(e.key==="ArrowRight") move(1,0);
     });
 
-    document.getElementById("undoBtn").onclick = ()=>{
-        if(prevPos){
-            player.x = prevPos.x;
-            player.y = prevPos.y;
-            drawMaze();
-        }
-    };
+document.getElementById("undoBtn").onclick = () => {
+    player.x = 0;   // quay về xuất phát
+    player.y = 0;
+    revealAll = false;  // reset chế độ đèn pin nếu đang bật
+    drawMaze();
+
+    // nếu muốn reset luôn timer
+    // clearInterval(timerInterval);
+    // timerEl.textContent = "Time: 77 giây";
+    // timerStarted = false;
+};
+
     /* ===== TIMER ===== */
     function startTimer(){
         clearInterval(timerInterval);
@@ -494,6 +587,28 @@ canvas.addEventListener('touchend', e => {
 
     /* ===== START ===== */
     resetGame();
+
+     /* ===== Nút điều khiển ===== */
+        document.getElementById("undoBtn").onclick = () => {
+            player.x = 0;   // Quay về xuất phát
+            player.y = 0;
+            revealAll = false;
+            drawMaze();
+        };
+
+    // Các nút di chuyển
+        document.getElementById("upBtn").onclick = () => {
+            move(0, -1);
+        };
+        document.getElementById("downBtn").onclick = () => {
+            move(0, 1);
+        };
+        document.getElementById("leftBtn").onclick = () => {
+            move(-1, 0);
+        };
+        document.getElementById("rightBtn").onclick = () => {
+            move(1, 0);
+        };
     </script>
     </body>
     </html>
