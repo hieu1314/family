@@ -94,12 +94,77 @@
     bottom: 20px;   /* Đặt panel ở dưới cùng màn hình */
     left: 50%;
     transform: translateX(-50%); /* Căn giữa */
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between; /* Đặt các phần tử cách đều nhau */
+    align-items: center;
+    width: 100%;
+    max-width: 360px; /* Giới hạn chiều rộng của panel */
+}
+/* Bố trí các nút di chuyển dọc (lên, xuống) */
+#verticalControls {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    z-index: 1000;
 }
 
+#verticalControls button {
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 5px;
+}
+#verticalControls button:hover {
+    background-color: #555;
+}
+
+/* Bố trí các nút di chuyển ngang (trái, phải) */
+#horizontalControls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#horizontalControls button {
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 5px;
+}
+
+#horizontalControls button:hover {
+    background-color: #555;
+}
+
+/* Nút quay lại ⟳ */
+#undoBtn {
+    width: 60px;
+    height: 60px;
+    font-size: 35px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 5px;
+}
+
+#undoBtn:hover {
+    background-color: #555;
+}
 /* Ẩn các nút di chuyển trên PC, chỉ hiển thị trên mobile */
 @media (max-width: 768px) {
     #controls {
@@ -129,10 +194,15 @@
     <div id="message" style="display:none;">Bạn kết thúc cuộc chơi!</div>
  <!-- Các nút di chuyển (hiển thị chỉ trên mobile) -->
     <div id="controls">
+      <div id="verticalControls">
         <button id="upBtn">↑</button>
         <button id="downBtn">↓</button>
+    </div>
+    
+    <div id="horizontalControls">
         <button id="leftBtn">←</button>
         <button id="rightBtn">→</button>
+    </div>
         <button id="undoBtn">⟳</button>
     </div>
 
