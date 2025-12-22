@@ -55,15 +55,16 @@
         }
 /* Các nút điều khiển */
 #controls button {
-    padding: 15px 20px;
-    font-size: 20px;
+    font-size: 30px;  /* Kích thước chữ lớn */
+    padding: 15px 25px;
     margin: 5px;
     background-color: #333;
     color: white;
-    border: 2px solid #444;
+    border: none;
     border-radius: 50%;
     cursor: pointer;
-    transition: background-color 0.3s;
+    width: 60px;
+    height: 60px;
 }
 
 #controls button:hover {
@@ -72,9 +73,14 @@
 
 /* Các nút điều khiển */
 #controls {
+    position: fixed;
+    bottom: 20px;   /* Đặt panel ở dưới cùng màn hình */
+    left: 50%;
+    transform: translateX(-50%); /* Căn giữa */
     display: flex;
-    justify-content: center;
-    margin-top: 10px;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
 }
 
 /* Ẩn các nút di chuyển trên PC, chỉ hiển thị trên mobile */
