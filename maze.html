@@ -187,10 +187,12 @@ function sealExit() {
             let nx = ex + dx*i;
             let ny = ey + dy*i;
             if (inBounds(nx,ny) && maze[ny][nx]===0) {
-                // đào hành lang duy nhất
-                for (let j=i; j>=1; j--) {
+                // đào hành lang tới sát exit (chừa 1 ô cuối)
+                for (let j=i; j>=2; j--) {
                     maze[ey + dy*j][ex + dx*j] = 0;
                 }
+                // duy nhất 1 lỗ thông vào exit
+                maze[ey + dy][ex + dx] = 0;
                 maze[ey][ex] = 0;
                 mainDir = [dx,dy];
                 break;
@@ -199,7 +201,7 @@ function sealExit() {
         if (mainDir) break;
     }
 
-    // 3️⃣ Tạo đường phụ/cụt quanh exit, KHÔNG nối vào exit hoặc hành lang chính
+    // 3️⃣ Tạo nhánh giả xung quanh exit, nhưng tinh tế
     for (let y=ey-3; y<=ey+3; y++) {
         for (let x=ex-3; x<=ex+3; x++) {
             if (!inBounds(x,y)) continue;
@@ -212,25 +214,34 @@ function sealExit() {
                 if (inBounds(nx,ny) && maze[ny][nx]===0) open++;
             }
 
-            if (open === 1) { // chỉ tạo thêm từ đường cụt
+            if (open === 1) {
                 let shuffled = shuffle(neighbors);
                 for (let [dx,dy] of shuffled) {
                     let nx = x+dx, ny = y+dy;
                     if (!inBounds(nx,ny) || maze[ny][nx]!==1) continue;
 
-                    // KHÔNG nối vào exit
+                    // ❌ không đục thẳng vào exit
                     if (nx === ex && ny === ey) continue;
 
-                    // KHÔNG nối thẳng hành lang chính
-                    if (mainDir && ((dx === mainDir[0] && dy === mainDir[1]) || (dx === -mainDir[0] && dy === -mainDir[1]))) continue;
+                    // ❌ không đục vào ô sát exit (choke point)
+                    if (Math.abs(nx - ex) + Math.abs(ny - ey) === 1) continue;
 
-                    maze[ny][nx] = 0; // đào tạo cảm giác lừa mắt
+                    // ✅ không tạo nhánh giả khi player đã gần exit (≤3 ô)
+                    let distPlayerToExit = Math.abs(player.x - ex) + Math.abs(player.y - ey);
+                    if (distPlayerToExit <= 3) continue;
+
+                    // ✅ chỉ tạo nhánh giả xa exit ít nhất 4 ô nhưng ≤8 ô
+                    let distToExit = Math.abs(nx - ex) + Math.abs(ny - ey);
+                    if (distToExit < 4 || distToExit > 8) continue;
+
+                    maze[ny][nx] = 0;
                     break;
                 }
             }
         }
     }
 }
+
 
 function getReachableFromPlayer(){
     let visited = Array.from({length: ROWS}, () => Array(COLS).fill(false));
@@ -253,6 +264,41 @@ function getReachableFromPlayer(){
     }
     return visited;
 }
+function addFakeBranchNearExit() {
+    let ex = exit.x;
+    let ey = exit.y;
+
+    // 1. Xác định điểm trên đường chính cách exit ít nhất 8 ô
+    let mainPathPoint = null;
+    for (let y = ey; y >= 0; y--) {
+        if (maze[y][ex] === 0) {
+            let dist = Math.abs(y - ey) + Math.abs(ex - ex);
+            if (dist >= 8) {
+                mainPathPoint = {x: ex, y: y};
+                break;
+            }
+        }
+    }
+    if (!mainPathPoint) return;
+
+    // 2. Tạo nhánh giả từ mainPathPoint
+    let dirs = shuffle([[1,0],[-1,0],[0,1],[0,-1]]);
+    for (let [dx,dy] of dirs) {
+        let branchLength = 3 + Math.floor(Math.random()*5); // 3-7 ô giả
+        let cx = mainPathPoint.x;
+        let cy = mainPathPoint.y;
+        for (let i=0; i<branchLength; i++) {
+            let nx = cx + dx;
+            let ny = cy + dy;
+            if (!inBounds(nx,ny) || maze[ny][nx]===0) break;
+            maze[ny][nx] = 0;
+            cx = nx;
+            cy = ny;
+        }
+        break; // chỉ tạo 1 nhánh giả
+    }
+}
+
     /* ===== DRAW ===== */
   function drawMaze(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
