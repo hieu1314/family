@@ -26,17 +26,7 @@
             background:#000;
             margin-top:10px;
         }
-        #undoBtn {
-            margin-top:10px;
-            padding:8px 14px;
-            background:#222;
-            color:#fff;
-            border:none;
-            cursor:pointer;
-            font-size:16px;
-            border-radius:5px;
-        }
-        #undoBtn:hover { background:#555; }
+
         #title {
             font-size:24px;
             font-weight:bold;
@@ -53,162 +43,100 @@
             position:absolute;
             top:40%;
         }
-/* Các nút điều khiển */
-#controls button {
-    font-size: 30px;  /* Kích thước chữ lớn */
-    padding: 15px 25px;
-    margin: 5px;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 60px;
-    height: 60px;
-}
-
-#controls button:hover {
-    background-color: #555;
-}
-/* Các nút di chuyển dọc sẽ có chiều cao lớn hơn */
-#upBtn, #downBtn {
-    width: 60px;
-    height: 60px;
-}
-
-#leftBtn, #rightBtn {
-    width: 60px;
-    height: 60px;
-}
-
-/* Cập nhật CSS cho nút quay lại */
-#undoBtn {
-    width: 60px;
-    height: 60px;
-    font-size: 35px; /* Nút quay lại có thể hơi lớn hơn */
-}
-
-/* Các nút điều khiển */
 #controls {
     position: fixed;
-    bottom: 20px;  /* Đặt panel ở dưới cùng màn hình */
+    bottom: 20px;
     left: 50%;
-    transform: translateX(-50%);  /* Căn giữa */
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px; /* khoảng cách giữa D-pad và nút ⟳ */
     z-index: 1000;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;  /* Đặt các phần tử theo chiều dọc */
-    width: 100%;
-    max-width: 450px;  /* Giới hạn chiều rộng của panel */
-    align-items: center;
-}
-/* Bố trí các nút di chuyển dọc (lên, xuống) */
-#verticalControls {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    height: 140px; /* Chiều cao của phần điều khiển dọc */
 }
 
-#verticalControls button {
+/* D-pad 3x3 */
+#dpad {
+    display: grid;
+    grid-template-columns: 60px 60px 60px;
+    grid-template-rows: 60px 60px 60px;
+    gap: 10px; /* khoảng trống giữa các nút */
+}
+
+/* Khoảng trống ở giữa */
+.center-gap {
     width: 60px;
     height: 60px;
-    font-size: 30px;
-    padding: 10px;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    margin: 5px;
-}
-#verticalControls button:hover {
-    background-color: #555;
 }
 
-/* Bố trí các nút di chuyển ngang (trái, phải) */
-#horizontalControls {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 10px; /* Khoảng cách giữa các nút ngang và dọc */
-    padding: 0 20px;  /* Thêm padding để tạo khoảng cách từ mép màn hình */
-}
-
-#horizontalControls button {
-    width: 60px;
-    height: 60px;
-    font-size: 30px;
-    padding: 10px;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    margin: 5px;
-}
-
-#horizontalControls button:hover {
-    background-color: #555;
-}
-
-/* Nút quay lại ⟳ */
+/* Nút chung */
+#dpad button,
 #undoBtn {
     width: 60px;
     height: 60px;
-    font-size: 35px;
+    font-size: 30px;
     background-color: #333;
     color: white;
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    margin: 5px;
 }
 
+#dpad button:hover,
 #undoBtn:hover {
     background-color: #555;
 }
-/* Ẩn các nút di chuyển trên PC, chỉ hiển thị trên mobile */
-@media (max-width: 768px) {
-    #controls {
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 10;
-    }
-}
 
+/* Ẩn trên PC */
 @media (min-width: 769px) {
     #controls {
-        display: none; /* Ẩn các nút di chuyển trên màn hình lớn */
+        display: none;
+    }
+}
+/* PC: chỉ hiện nút ⟳ */
+@media (min-width: 769px) {
+    #controls {
+        display: flex;
+        bottom: 20px;
+        left: auto;
+        right: 20px;
+        transform: none;
+    }
+
+    #dpad {
+        display: none; /* Ẩn 4 nút di chuyển */
+    }
+
+    #undoBtn {
+        position: static;
     }
 }
     </style>
     </head>
 
     <body>
-    <div id="title">Kiên nhẫn và may mắn</div>
+    <div id="title">Hãy kiên nhẫn và cầu may :p</div>
     <div id="timer">Time: 90</div>
     <canvas id="mazeCanvas"></canvas>
-            <button id="undoBtn">⟳</button>
+  
     <div id="message" style="display:none;">Bạn kết thúc cuộc chơi!</div>
  <!-- Các nút di chuyển (hiển thị chỉ trên mobile) -->
     <div id="controls">
-      <div id="verticalControls">
-        <button id="upBtn">↑</button>
-        <button id="downBtn">↓</button>
-    </div>
-    
-    <div id="horizontalControls">
-        <button id="leftBtn">←</button>
-        <button id="rightBtn">→</button>
-    </div>
-        <button id="undoBtn">⟳</button>
-    </div>
+  <div id="dpad">
+    <div></div>
+    <button id="upBtn">↑</button>
+    <div></div>
+
+    <button id="leftBtn">←</button>
+    <div class="center-gap"></div>
+    <button id="rightBtn">→</button>
+
+    <div></div>
+    <button id="downBtn">↓</button>
+    <div></div>
+  </div>
+
+  <button id="undoBtn">⟳</button>
+</div>
 
     <script>
     const canvas = document.getElementById("mazeCanvas");
