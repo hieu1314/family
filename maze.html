@@ -36,13 +36,31 @@
             font-size:20px;
             margin-top:4px;
         }
-        #message {
-            font-size:26px;
-            font-weight:bold;
-            color:yellow;
-            position:absolute;
-            top:40%;
-        }
+  #winMessage, #loseMessage {
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 0 0 10px #000;
+    background: rgba(0,0,0,0.75);
+    padding: 20px 30px;
+    border-radius: 14px;
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2000;
+}
+
+#winMessage {
+    color: #00ff9c;
+    text-shadow: 0 0 12px #00ff9c;
+}
+
+#loseMessage {
+    color: #ff4444;
+    text-shadow: 0 0 12px #ff0000;
+}
+
 #controls {
     position: fixed;
     bottom: 20px;
@@ -114,11 +132,17 @@
     </head>
 
     <body>
-    <div id="title">Hãy kiên nhẫn và cầu may :p</div>
+    <div id="title">Hãy kiên nhẫn và cầu may</div>
     <div id="timer">Time: 90</div>
     <canvas id="mazeCanvas"></canvas>
   
-    <div id="message" style="display:none;">Bạn kết thúc cuộc chơi!</div>
+    <div id="winMessage" style="display:none;">
+    🎉 Chúc mừng hết mê mụi! 🎉
+</div>
+
+<div id="loseMessage" style="display:none;">
+    💀 Bạn đã hết thời gian! 💀
+</div>
  <!-- Các nút di chuyển (hiển thị chỉ trên mobile) -->
     <div id="controls">
   <div id="dpad">
@@ -232,9 +256,7 @@ if(b) createFakeDeadEnd(b.x, b.y, 7);
 // 🔥 QUAN TRỌNG
 sealExit();
 connectLonelyNearExit();
-
-getReachableFromPlayer();
-
+ensureExitReachable_FarthestFromExit();
      // đảm bảo lối ra cho player
     maze[0][0] = 0;
     maze[0][1] = 0;
@@ -419,6 +441,68 @@ function getReachableFromPlayer(){
     }
     return visited;
 }
+function ensureExitReachable_FarthestFromExit(){
+    let reachable = getReachableFromPlayer();
+
+    // ✅ Đã đi được rồi → thôi
+    if(reachable[exit.y][exit.x]) return;
+
+    // ✅ Nhìn / đi thẳng được → thôi
+    if(hasClearPathToExit()) return;
+
+    let best = null;
+    let bestDist = -1;
+
+    for(let y=1; y<ROWS-1; y++){
+        for(let x=1; x<COLS-1; x++){
+            if(maze[y][x] !== 1) continue;
+
+            let hasReachable = false;
+            let hasUnreachable = false;
+
+            for(let [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+                let nx = x+dx, ny = y+dy;
+                if(!inBounds(nx,ny)) continue;
+                if(maze[ny][nx] !== 0) continue;
+
+                if(reachable[ny][nx]) hasReachable = true;
+                else hasUnreachable = true;
+            }
+
+            if(hasReachable && hasUnreachable){
+                let dist = Math.abs(x-exit.x) + Math.abs(y-exit.y);
+                if(dist > bestDist){
+                    bestDist = dist;
+                    best = {x,y};
+                }
+            }
+        }
+    }
+
+    if(best){
+        maze[best.y][best.x] = 0; // ⭐ chỉ lúc THẬT SỰ CẦN
+    }
+}
+
+function hasClearPathToExit(){
+    let x = 0, y = 0;
+
+    // đi ngang trước
+    let stepX = exit.x > x ? 1 : -1;
+    while(x !== exit.x){
+        if(maze[y][x] === 1) return false;
+        x += stepX;
+    }
+
+    // rồi đi dọc
+    let stepY = exit.y > y ? 1 : -1;
+    while(y !== exit.y){
+        if(maze[y][x] === 1) return false;
+        y += stepY;
+    }
+
+    return true;
+}
 
     /* ===== DRAW ===== */
   function drawMaze(){
@@ -506,13 +590,18 @@ function getReachableFromPlayer(){
                 player.y = ny;
                 drawMaze();
 
-               if(player.x===exit.x && player.y===exit.y){
+           if(player.x === exit.x && player.y === exit.y){
     revealAll = true;
     drawMaze();
 
+    clearInterval(timerInterval);
+
+    document.getElementById("winMessage").style.display = "block";
+
     setTimeout(()=>{
         window.location.href = "index.html";
-    },15000); // 15 giây
+    },15000);
+
     return;
 }
                 let dirs = availableDirs(player.x,player.y);
@@ -564,14 +653,15 @@ function showEndMessage(){
     revealAll = true;
     drawMaze();
 
-    messageEl.style.display = "block";
+    document.getElementById("loseMessage").style.display = "block";
 
     setTimeout(()=>{
-        messageEl.style.display = "none";
+        document.getElementById("loseMessage").style.display = "none";
         revealAll = false;
         resetGame();
-    },15000); // 15 giây
+    },15000);
 }
+
 
  /* ===== MOBILE TOUCH CONTROL ===== */
 let touchStartX = 0, touchStartY = 0;
