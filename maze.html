@@ -196,7 +196,7 @@ function countOpenNeighbors(x,y){
 }
 // === NỐI DEAD-END GẦN EXIT VÀO NHÁNH GIẢ ===
 function connectLonelyNearExit(){
-    const MAX_DIST = 5; // bán kính quanh exit
+    const MAX_DIST = 5;
     let candidates = [];
 
     for(let y=exit.y-MAX_DIST; y<=exit.y+MAX_DIST; y++){
@@ -204,8 +204,10 @@ function connectLonelyNearExit(){
             if(!inBounds(x,y)) continue;
             if(maze[y][x]!==0) continue;
 
-            // dead-end thật
-            if(countOpenNeighbors(x,y) !== 1) continue;
+            if(countOpenNeighbors(x,y) !== 1) continue; // chỉ dead-end thật
+
+            // ⭐ kiểm tra: nếu dead-end ngay sát exit, bỏ qua
+            if(Math.abs(x-exit.x)+Math.abs(y-exit.y) <= 2) continue;
 
             candidates.push({x,y});
         }
@@ -215,7 +217,6 @@ function connectLonelyNearExit(){
 
     let dead = shuffle(candidates)[0];
 
-    // tìm fake path gần nhất
     for(let [dx,dy] of shuffle([[0,-1],[1,0],[0,1],[-1,0]])){
         let bx = dead.x + dx*2;
         let by = dead.y + dy*2;
@@ -226,7 +227,6 @@ function connectLonelyNearExit(){
         // tránh đụng exit trực tiếp
         if(Math.abs(bx-exit.x)+Math.abs(by-exit.y) <= 1) continue;
 
-        // chỉ nối nếu không tạo loop
         if(countOpenNeighbors(dead.x+dx, dead.y+dy)===0){
             maze[dead.y+dy][dead.x+dx] = 0;
             break;
@@ -246,15 +246,47 @@ function connectLonelyNearExit(){
     carveMainPath(0,0);
 addDeadEnds();
 
-// fake branch
-let path = getPathFromStartToExit();
-let a = path[5];
-if(a) createFakeDeadEnd(a.x, a.y, 6);
-let b = path[20 + Math.floor(Math.random()*10)];
-if(b) createFakeDeadEnd(b.x, b.y, 7);
+ // ==== TẠO NHÁNH GIẢ TRƯỚC ====
+    let path = getPathFromStartToExit();
+    let a = path[5];
+    if(a) createFakeDeadEnd(a.x, a.y, 6);
+    let b = path[20 + Math.floor(Math.random()*10)];
+    if(b) createFakeDeadEnd(b.x, b.y, 7);
+ // ==== NỐI NHÁNH GIẢ TRỰC TIẾP VÀO ĐƯỜNG CHÍNH ====
+ let mainPath = getPathFromStartToExit();
+if(mainPath.length >= 5){
+    let fractions = [1/24, 2/24, 3/24, 4/24, 5/24, 6/24, 7/24, 9/24, 11/24, 13/24, 15/24, 18/24, 20/24];
+    let indices = fractions.map(f => Math.floor(mainPath.length * f));
+
+    for(let idx of indices){
+        let p = mainPath[idx];
+
+        // ✅ tránh nối quá gần exit (ví dụ cách exit < 4 ô)
+        let distToExit = Math.abs(p.x - exit.x) + Math.abs(p.y - exit.y);
+        if(distToExit < 4) continue; 
+
+        // tìm ô nhánh giả dead-end xung quanh
+        let neighbors = shuffle([[0,-1],[1,0],[0,1],[-1,0]]);
+        for(let [dx,dy] of neighbors){
+            let nx = p.x + dx;
+            let ny = p.y + dy;
+            if(!inBounds(nx,ny)) continue;
+            if(maze[ny][nx] !== 0) continue; // phải là nhánh giả
+            if(countOpenNeighbors(nx,ny) !== 1) continue; // dead-end thật
+
+            // đục 1 ô nối nhánh giả vào đường chính
+            maze[p.y + dy][p.x + dx] = 0;
+            break; // mỗi vị trí chỉ nối 1 nhánh
+        }
+    }
+}
+
+    // ==== NỐI NHÁNH GIẢ VÀO ĐƯỜNG CHÍNH ====
+    connectFakeBranchesAlongMainPath();
 
 // 🔥 QUAN TRỌNG
 sealExit();
+
 connectLonelyNearExit();
 ensureExitReachable_FarthestFromExit();
      // đảm bảo lối ra cho player
@@ -264,8 +296,24 @@ ensureExitReachable_FarthestFromExit();
 
     maze[exit.y][exit.x] = 0;
 
-let safety = 50;
-    while (safety-- && ensureAllPathsReachable()) {}
+ // ✅ CHỖ NÀY: fix tất cả vùng cô lập
+    let safety = 300;
+   while(safety--){
+        let fixed = ensureAllPathsReachable();
+        if(!fixed) break;
+
+        // phá bớt tường dài > 20
+        for(let y=1;y<ROWS-1;y++){
+            for(let x=1;x<COLS-1;x++){
+                if(maze[y][x] === 1){
+                    let len = 0;
+                    for(let k=x;k<COLS-1 && maze[y][k]===1;k++) len++;
+                    if(len > 20) maze[y][x+Math.floor(len/2)] = 0;
+                }
+            }
+        }
+    }
+fixAllIsolatedPaths();
     drawMaze();
 }
  function getFixedExit(){
@@ -304,6 +352,7 @@ function carveMainPath(x, y, depth = 0){
     }
 }
 function carveDeadEnd(x,y,length=9){
+    length = Math.min(length, 12); // tránh quá dài
     let cx=x, cy=y;
     let dir = shuffle([[0,-1],[1,0],[0,1],[-1,0]])[0];
 
@@ -366,6 +415,7 @@ function sealExit() {
 }
 
 function createFakeDeadEnd(sx, sy, length){
+    length = Math.min(length, 8); // nhánh giả ngắn
     const dirs = shuffle([[0,-1],[1,0],[0,1],[-1,0]]);
 
     for(let [dx,dy] of dirs){
@@ -512,27 +562,32 @@ function ensureAllPathsReachable(){
     let regions = getUnreachableRegions(reachable);
     if(!regions.length) return false;
 
+    // 1️⃣ chọn vùng chết xa exit nhất
     let bestRegion = null;
-    let bestDist = -1;
+    let bestRegionDist = -1;
 
     for(let region of regions){
-        // lấy điểm GẦN exit nhất của vùng
         let minDist = Infinity;
         for(let c of region){
             let d = Math.abs(c.x-exit.x) + Math.abs(c.y-exit.y);
             if(d < minDist) minDist = d;
         }
-
-        if(minDist > bestDist){
-            bestDist = minDist;
+        if(minDist > bestRegionDist){
+            bestRegionDist = minDist;
             bestRegion = region;
         }
     }
 
-    // tìm 1 ô tường biên để đục
-    let bestWall = null;
-    let wallDist = -1;
+    // số ô reachable hiện tại
+    let beforeCount = 0;
+    for(let y=0;y<ROWS;y++)
+        for(let x=0;x<COLS;x++)
+            if(reachable[y][x]) beforeCount++;
 
+    let bestWall = null;
+    let bestWallDist = -1;
+
+    // 2️⃣ thử TẤT CẢ tường biên của vùng đó
     for(let c of bestRegion){
         for(let [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
             let wx = c.x+dx;
@@ -544,18 +599,36 @@ function ensureAllPathsReachable(){
             if(maze[wy][wx]!==1) continue;
             if(!reachable[ry][rx]) continue;
 
-            let d = Math.abs(wx-exit.x)+Math.abs(wy-exit.y);
-            if(d > wallDist){
-                wallDist = d;
+            // 🔬 giả lập đục
+            maze[wy][wx] = 0;
+            let testReachable = getReachableFromPlayer();
+
+            let afterCount = 0;
+            for(let y=0;y<ROWS;y++)
+                for(let x=0;x<COLS;x++)
+                    if(testReachable[y][x]) afterCount++;
+
+            // hoàn tác
+            maze[wy][wx] = 1;
+
+            // ❌ đục vô nghĩa
+            if(afterCount <= beforeCount) continue;
+
+            // ✅ đục có hiệu quả
+            let dist = Math.abs(wx-exit.x)+Math.abs(wy-exit.y);
+            if(dist > bestWallDist){
+                bestWallDist = dist;
                 bestWall = {x:wx,y:wy};
             }
         }
     }
 
+    // 3️⃣ chỉ đục khi chắc chắn nối về player
     if(bestWall){
         maze[bestWall.y][bestWall.x] = 0;
         return true;
     }
+
     return false;
 }
 
@@ -593,6 +666,98 @@ function getUnreachableRegions(reachable){
         }
     }
     return regions;
+}
+
+function fixAllIsolatedPaths(){
+    let safety = 200; // dư rất nhiều cho 33x33
+
+    while(safety--){
+
+        let reachable = getReachableFromPlayer();
+        let hasIsolated = false;
+
+        // kiểm tra còn ô 0 nào unreachable không
+        for(let y=0;y<ROWS;y++){
+            for(let x=0;x<COLS;x++){
+                if(maze[y][x] === 0 && !reachable[y][x]){
+                    hasIsolated = true;
+                    break;
+                }
+            }
+            if(hasIsolated) break;
+        }
+
+        // ✅ sạch hoàn toàn
+        if(!hasIsolated) return;
+
+        let bestWall = null;
+        let bestDist = -1;
+
+        // tìm tường nối reachable <-> unreachable
+        for(let y=1;y<ROWS-1;y++){
+            for(let x=1;x<COLS-1;x++){
+                if(maze[y][x] !== 1) continue;
+
+                let r = false, u = false;
+
+                for(let [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+                    let nx = x+dx, ny = y+dy;
+                    if(!inBounds(nx,ny)) continue;
+                    if(maze[ny][nx] !== 0) continue;
+
+                    if(reachable[ny][nx]) r = true;
+                    else u = true;
+                }
+
+                if(r && u){
+                    let d = Math.abs(x-exit.x) + Math.abs(y-exit.y);
+                    if(d > bestDist){
+                        bestDist = d;
+                        bestWall = {x,y};
+                    }
+                }
+            }
+        }
+
+        // 🚨 không còn tường hợp lệ (hiếm, nhưng an toàn)
+        if(!bestWall){
+            console.warn("FIX FAILED: still isolated paths");
+            return;
+        }
+
+        // 🔥 đục 1 ô
+        maze[bestWall.y][bestWall.x] = 0;
+    }
+
+    console.warn("FIX SAFETY LIMIT HIT");
+}
+ 
+function connectFakeBranchesAlongMainPath() {
+    let path = getPathFromStartToExit(); // đường chính từ player → exit
+    if(path.length < 4) return; // quá ngắn thì thôi
+
+    let thirds = [Math.floor(path.length/3), Math.floor(2*path.length/3)];
+
+    for(let idx of thirds) {
+        let p = path[idx];
+        // tìm các ô dead-end xung quanh
+        let neighbors = [[0,-1],[1,0],[0,1],[-1,0]];
+        neighbors = shuffle(neighbors);
+
+        for(let [dx,dy] of neighbors){
+            let nx = p.x + dx;
+            let ny = p.y + dy;
+
+            if(!inBounds(nx,ny)) continue;
+            if(maze[ny][nx] !== 0) continue; // phải là đường giả
+            // kiểm tra dead-end: chỉ nối nếu dead-end (chỉ 1 ô mở)
+            if(countOpenNeighbors(nx,ny) === 1){
+                // đục 1 ô để nối vào đường chính
+                maze[p.y + dy][p.x + dx] = 0;
+                break; // mỗi vị trí chỉ nối 1 nhánh
+            }
+        }
+    }
 }
 
     /* ===== DRAW ===== */
@@ -655,6 +820,39 @@ function getUnreachableRegions(reachable){
     ctx.arc(px, py, TILE/2.5,0,Math.PI*2);
     ctx.fill();
 }
+// ===== CHEAT PC: Ctrl + L =====
+document.addEventListener("keydown", e => {
+    if (e.ctrlKey && (e.key === "l" || e.key === "L")) {
+        e.preventDefault(); // tránh browser focus address bar
+        revealAll = !revealAll;
+        drawMaze();
+        console.log("CHEAT PC: revealAll =", revealAll);
+    }
+});
+// ===== CHEAT MOBILE: 3 tap góc trên trái =====
+let cheatTap = 0;
+let cheatTimer = null;
+
+canvas.addEventListener("click", e => {
+    let rect = canvas.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+    if (x < 50 && y < 50) {
+        cheatTap++;
+
+        if (cheatTimer) clearTimeout(cheatTimer);
+        cheatTimer = setTimeout(() => cheatTap = 0, 600);
+
+        if (cheatTap >= 3) {
+            revealAll = !revealAll;
+            drawMaze();
+            cheatTap = 0;
+            console.log("CHEAT MOBILE: revealAll =", revealAll);
+        }
+    }
+});
+
     /* ===== MOVE LOGIC ===== */
     function availableDirs(x,y){
         let dirs = [];
