@@ -244,18 +244,12 @@ function connectLonelyNearExit(){
     player = {x:0,y:0};
 
     carveMainPath(0,0);
-addDeadEnds();
+    addDeadEnds();
 
- // ==== TẠO NHÁNH GIẢ TRƯỚC ====
-    let path = getPathFromStartToExit();
-    let a = path[5];
-    if(a) createFakeDeadEnd(a.x, a.y, 6);
-    let b = path[20 + Math.floor(Math.random()*10)];
-    if(b) createFakeDeadEnd(b.x, b.y, 7);
  // ==== NỐI NHÁNH GIẢ TRỰC TIẾP VÀO ĐƯỜNG CHÍNH ====
  let mainPath = getPathFromStartToExit();
-if(mainPath.length >= 5){
-    let fractions = [1/24, 2/24, 3/24, 4/24, 5/24, 6/24, 7/24, 9/24, 11/24, 13/24, 15/24, 18/24, 20/24];
+if(mainPath.length >= 6){
+    let fractions = [1/52, 2/52, 2/26, 3/26, 4/26, 3/13, 4/13, 5/13, 5/10, 6/10, 7/10, 8/10];
     let indices = fractions.map(f => Math.floor(mainPath.length * f));
 
     for(let idx of indices){
@@ -263,7 +257,7 @@ if(mainPath.length >= 5){
 
         // ✅ tránh nối quá gần exit (ví dụ cách exit < 4 ô)
         let distToExit = Math.abs(p.x - exit.x) + Math.abs(p.y - exit.y);
-        if(distToExit < 4) continue; 
+        if(distToExit < 6) continue; 
 
         // tìm ô nhánh giả dead-end xung quanh
         let neighbors = shuffle([[0,-1],[1,0],[0,1],[-1,0]]);
@@ -280,9 +274,9 @@ if(mainPath.length >= 5){
         }
     }
 }
-
     // ==== NỐI NHÁNH GIẢ VÀO ĐƯỜNG CHÍNH ====
     connectFakeBranchesAlongMainPath();
+    breakWallsNearFakeBranches();
 
 // 🔥 QUAN TRỌNG
 sealExit();
@@ -308,7 +302,7 @@ ensureExitReachable_FarthestFromExit();
                 if(maze[y][x] === 1){
                     let len = 0;
                     for(let k=x;k<COLS-1 && maze[y][k]===1;k++) len++;
-                    if(len > 20) maze[y][x+Math.floor(len/2)] = 0;
+                    if(len > 12) maze[y][x+Math.floor(len/2)] = 0;
                 }
             }
         }
@@ -384,34 +378,55 @@ function sealExit() {
     let ey = exit.y;
     const neighbors = [[0,-1], [1,0], [0,1], [-1,0]];
 
-    // Đặt tường 1 ô quanh exit
+    // 1️⃣ Đặt tường 1 ô quanh exit
     for (let [dx, dy] of neighbors) {
         let x = ex + dx;
         let y = ey + dy;
         if (inBounds(x, y)) maze[y][x] = 1;
     }
 
-    // Tạo lối chính từ đường chính đến exit (giữ choke point)
-    let dirs = shuffle(neighbors);
-    let mainDir = null;
-    for (let [dx, dy] of dirs) {
-        for (let i = 1; i <= 12; i++) {
-            let nx = ex + dx * i;
-            let ny = ey + dy * i;
-            if (inBounds(nx, ny) && maze[ny][nx] === 0) {
-                for (let j = i; j >= 2; j--) {
-                    maze[ey + dy * j][ex + dx * j] = 0;
-                }
-                maze[ey + dy][ex + dx] = 0;
-                maze[ey][ex] = 0;
-                mainDir = [dx, dy];
+    // 2️⃣ Tạo lối dẫn vào exit ít nhất 4 ô, quanh co
+    const minLength = 4;
+    let pathMade = false;
+    let attempts = 0;
+
+    while (!pathMade && attempts < 20) { // giới hạn số lần thử tránh loop vô hạn
+        attempts++;
+        // Chọn hướng chính ngẫu nhiên
+        let [dx, dy] = neighbors[Math.floor(Math.random() * neighbors.length)];
+        let length = minLength + Math.floor(Math.random() * 3); // dài 4~6 ô
+
+        let x = ex;
+        let y = ey;
+        let valid = true;
+        let positions = [];
+
+        for (let i = 1; i <= length; i++) {
+            x += dx;
+            y += dy;
+            // Có thể thêm "quanh co" ngẫu nhiên
+            if (Math.random() < 0.3) {
+                let turn = neighbors[Math.floor(Math.random() * neighbors.length)];
+                x += turn[0];
+                y += turn[1];
+            }
+
+            if (!inBounds(x, y) || maze[y][x] !== 1) {
+                valid = false;
                 break;
             }
+            positions.push([x, y]);
         }
-        if (mainDir) break;
+
+        if (valid) {
+            for (let [px, py] of positions) maze[py][px] = 0;
+            maze[ey][ex] = 0;
+            pathMade = true;
+        }
     }
 
-    maze[exit.y][exit.x] = 0; // Bảo hiểm không bao giờ bít exit
+    // 3️⃣ Bảo hiểm exit luôn mở
+    maze[exit.y][exit.x] = 0;
 }
 
 function createFakeDeadEnd(sx, sy, length){
@@ -669,7 +684,7 @@ function getUnreachableRegions(reachable){
 }
 
 function fixAllIsolatedPaths(){
-    let safety = 200; // dư rất nhiều cho 33x33
+    let safety = 100; // dư rất nhiều cho 33x33
 
     while(safety--){
 
@@ -733,29 +748,71 @@ function fixAllIsolatedPaths(){
 }
  
 function connectFakeBranchesAlongMainPath() {
-    let path = getPathFromStartToExit(); // đường chính từ player → exit
-    if(path.length < 4) return; // quá ngắn thì thôi
+    let path = getPathFromStartToExit(); // Lấy đường chính từ player → exit
+    if (path.length < 4) return; // Quá ngắn thì thôi
 
-    let thirds = [Math.floor(path.length/3), Math.floor(2*path.length/3)];
+    // Chọn nhiều điểm dọc theo đường chính để tạo nhánh (thay vì chỉ 2 điểm)
+    let numBranches = Math.max(4, Math.floor(path.length / 6)); // Tạo ít nhất 3 nhánh
+    let branchIndices = [];
+    for (let i = 1; i < numBranches; i++) {
+        let idx = Math.floor(i * path.length / numBranches);
+        branchIndices.push(idx);
+    }
 
-    for(let idx of thirds) {
+    // Duyệt qua các điểm ngã rẽ trên đường chính
+    for (let idx of branchIndices) {
         let p = path[idx];
-        // tìm các ô dead-end xung quanh
-        let neighbors = [[0,-1],[1,0],[0,1],[-1,0]];
+        // Tìm các ô dead-end xung quanh
+        let neighbors = [[0, -1], [1, 0], [0, 1], [-1, 0]];
         neighbors = shuffle(neighbors);
 
-        for(let [dx,dy] of neighbors){
+        for (let [dx, dy] of neighbors) {
             let nx = p.x + dx;
             let ny = p.y + dy;
 
-            if(!inBounds(nx,ny)) continue;
-            if(maze[ny][nx] !== 0) continue; // phải là đường giả
-            // kiểm tra dead-end: chỉ nối nếu dead-end (chỉ 1 ô mở)
-            if(countOpenNeighbors(nx,ny) === 1){
-                // đục 1 ô để nối vào đường chính
+            if (!inBounds(nx, ny)) continue;
+            if (maze[ny][nx] !== 0) continue; // Phải là đường giả
+            // Kiểm tra dead-end: chỉ nối nếu dead-end (chỉ 1 ô mở)
+            if (countOpenNeighbors(nx, ny) === 1) {
+                // Đục 1 ô để nối vào đường chính
                 maze[p.y + dy][p.x + dx] = 0;
-                break; // mỗi vị trí chỉ nối 1 nhánh
+                break; // Mỗi vị trí chỉ nối 1 nhánh
             }
+        }
+    }
+}
+
+function breakWallsNearFakeBranches() {
+    let path = getPathFromStartToExit();
+    let maxIdx = Math.floor(path.length * 2 / 3); // ưu tiên start → 2/3 đường
+    let candidates = [];
+
+    for (let i = 0; i < maxIdx; i++) {
+        let p = path[i];
+        for (let [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+            let nx = p.x + dx;
+            let ny = p.y + dy;
+            let nnx = p.x + dx * 2;
+            let nny = p.y + dy * 2;
+
+            if (!inBounds(nx, ny) || !inBounds(nnx, nny)) continue;
+            if (maze[ny][nx] !== 1) continue; // phải là tường
+            if (maze[nny][nnx] !== 0) continue; // phải là nhánh giả/dead-end
+
+            candidates.push({ x: nx, y: ny });
+        }
+    }
+
+    shuffle(candidates);
+
+    let breakCount = 0;
+    for (let j = 0; j < candidates.length; j++) {
+        if (breakCount >= 6) break; // chỉ tối đa 4 ô
+        let c = candidates[j];
+        // ⭐ Chỉ đục nếu sau khi đục không tạo đường liền kề nhiều ô
+        if (countOpenNeighbors(c.x, c.y) <= 1) {
+            maze[c.y][c.x] = 0;
+            breakCount++;
         }
     }
 }
