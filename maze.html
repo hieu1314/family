@@ -264,6 +264,8 @@ ensureExitReachable_FarthestFromExit();
 
     maze[exit.y][exit.x] = 0;
 
+let safety = 50;
+    while (safety-- && ensureAllPathsReachable()) {}
     drawMaze();
 }
  function getFixedExit(){
@@ -441,6 +443,7 @@ function getReachableFromPlayer(){
     }
     return visited;
 }
+
 function ensureExitReachable_FarthestFromExit(){
     let reachable = getReachableFromPlayer();
 
@@ -502,6 +505,94 @@ function hasClearPathToExit(){
     }
 
     return true;
+}
+
+function ensureAllPathsReachable(){
+    let reachable = getReachableFromPlayer();
+    let regions = getUnreachableRegions(reachable);
+    if(!regions.length) return false;
+
+    let bestRegion = null;
+    let bestDist = -1;
+
+    for(let region of regions){
+        // lấy điểm GẦN exit nhất của vùng
+        let minDist = Infinity;
+        for(let c of region){
+            let d = Math.abs(c.x-exit.x) + Math.abs(c.y-exit.y);
+            if(d < minDist) minDist = d;
+        }
+
+        if(minDist > bestDist){
+            bestDist = minDist;
+            bestRegion = region;
+        }
+    }
+
+    // tìm 1 ô tường biên để đục
+    let bestWall = null;
+    let wallDist = -1;
+
+    for(let c of bestRegion){
+        for(let [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+            let wx = c.x+dx;
+            let wy = c.y+dy;
+            let rx = c.x-dx;
+            let ry = c.y-dy;
+
+            if(!inBounds(wx,wy) || !inBounds(rx,ry)) continue;
+            if(maze[wy][wx]!==1) continue;
+            if(!reachable[ry][rx]) continue;
+
+            let d = Math.abs(wx-exit.x)+Math.abs(wy-exit.y);
+            if(d > wallDist){
+                wallDist = d;
+                bestWall = {x:wx,y:wy};
+            }
+        }
+    }
+
+    if(bestWall){
+        maze[bestWall.y][bestWall.x] = 0;
+        return true;
+    }
+    return false;
+}
+
+function getUnreachableRegions(reachable){
+    let visited = Array.from({length:ROWS},()=>Array(COLS).fill(false));
+    let regions = [];
+
+    for(let y=1;y<ROWS-1;y++){
+        for(let x=1;x<COLS-1;x++){
+            if(maze[y][x]!==0) continue;
+            if(reachable[y][x]) continue;
+            if(visited[y][x]) continue;
+
+            let stack=[{x,y}];
+            let cells=[];
+            visited[y][x]=true;
+
+            while(stack.length){
+                let {x,y}=stack.pop();
+                cells.push({x,y});
+
+                for(let [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){
+                    let nx=x+dx, ny=y+dy;
+                    if(!inBounds(nx,ny)) continue;
+                    if(visited[ny][nx]) continue;
+                    if(maze[ny][nx]!==0) continue;
+                    if(reachable[ny][nx]) continue;
+
+                    visited[ny][nx]=true;
+                    stack.push({x:nx,y:ny});
+                }
+            }
+
+            regions.push(cells);
+        }
+    }
+    return regions;
 }
 
     /* ===== DRAW ===== */
