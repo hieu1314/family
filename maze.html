@@ -5,43 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Maze Auto-move Final</title>
     <style>
-  html, body {
-            margin:0; padding:0; height:100%; overflow:hidden;
-            background:#000;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            justify-content:flex-start;
-            color:#fff;
-            font-family:sans-serif;
-        }
-        body { touch-action: none; }
-        canvas {
-            width: 90vw;
-            height: auto;
-            max-width: 744px;
-        }
-        canvas {
-            display:block;
-            background:#000;
-            margin-top:10px;
-        }
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    color: #fff;
+    font-family: sans-serif;
+}
 
-        #title {
-            font-size:24px;
-            font-weight:bold;
-            margin-top:10px;
-        }
-        #timer {
-            font-size:20px;
-            margin-top:4px;
-        }
-  #winMessage, #loseMessage {
+body {
+    touch-action: none;
+}
+
+canvas {
+    width: 90vw;
+    height: auto;
+    max-width: 744px;
+    display: block;
+    background: #000;
+    margin-top: 10px;
+}
+
+#title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+#timer {
+    font-size: 20px;
+    margin-top: 4px;
+}
+
+#winMessage, #loseMessage {
     font-size: 32px;
     font-weight: bold;
     text-align: center;
     text-shadow: 0 0 10px #000;
-    background: rgba(0,0,0,0.75);
+    background: rgba(0, 0, 0, 0.75);
     padding: 20px 30px;
     border-radius: 14px;
     position: fixed;
@@ -68,27 +75,23 @@
     transform: translateX(-50%);
     display: flex;
     align-items: center;
-    gap: 20px; /* khoảng cách giữa D-pad và nút ⟳ */
+    gap: 20px;
     z-index: 1000;
 }
 
-/* D-pad 3x3 */
 #dpad {
     display: grid;
     grid-template-columns: 60px 60px 60px;
     grid-template-rows: 60px 60px 60px;
-    gap: 10px; /* khoảng trống giữa các nút */
+    gap: 10px;
 }
 
-/* Khoảng trống ở giữa */
 .center-gap {
     width: 60px;
     height: 60px;
 }
 
-/* Nút chung */
-#dpad button,
-#undoBtn {
+#dpad button, #undoBtn {
     width: 60px;
     height: 60px;
     font-size: 30px;
@@ -99,18 +102,17 @@
     cursor: pointer;
 }
 
-#dpad button:hover,
-#undoBtn:hover {
+#dpad button:hover, #undoBtn:hover {
     background-color: #555;
 }
 
-/* Ẩn trên PC */
+/* Ẩn các điều khiển trên PC */
 @media (min-width: 769px) {
     #controls {
         display: none;
     }
 }
-/* PC: chỉ hiện nút ⟳ */
+
 @media (min-width: 769px) {
     #controls {
         display: flex;
@@ -128,6 +130,7 @@
         position: static;
     }
 }
+
     </style>
     </head>
 
@@ -249,7 +252,7 @@ function connectLonelyNearExit(){
  // ==== NỐI NHÁNH GIẢ TRỰC TIẾP VÀO ĐƯỜNG CHÍNH ====
  let mainPath = getPathFromStartToExit();
 if(mainPath.length >= 6){
-    let fractions = [1/52, 2/52, 2/26, 3/26, 4/26, 3/13, 4/13, 5/13, 5/10, 6/10, 7/10, 8/10];
+    let fractions = [1/52, 2/52, 3/52, 4/52, 3/26, 4/26, 5/26, 6/26, 7/26, 8/26, 5/13, 6/13, 7/13, 8/13, 9/13, 10/13, 11/13];
     let indices = fractions.map(f => Math.floor(mainPath.length * f));
 
     for(let idx of indices){
@@ -280,7 +283,7 @@ if(mainPath.length >= 6){
 
 // 🔥 QUAN TRỌNG
 sealExit();
-
+createFakeBranchAndConnect();
 connectLonelyNearExit();
 ensureExitReachable_FarthestFromExit();
      // đảm bảo lối ra cho player
@@ -746,37 +749,43 @@ function fixAllIsolatedPaths(){
 
     console.warn("FIX SAFETY LIMIT HIT");
 }
- 
 function connectFakeBranchesAlongMainPath() {
     let path = getPathFromStartToExit(); // Lấy đường chính từ player → exit
     if (path.length < 4) return; // Quá ngắn thì thôi
 
-    // Chọn nhiều điểm dọc theo đường chính để tạo nhánh (thay vì chỉ 2 điểm)
-    let numBranches = Math.max(4, Math.floor(path.length / 6)); // Tạo ít nhất 3 nhánh
-    let branchIndices = [];
-    for (let i = 1; i < numBranches; i++) {
-        let idx = Math.floor(i * path.length / numBranches);
-        branchIndices.push(idx);
-    }
+    let maxConnections = 10; // Giới hạn số lượng lỗ đục
+    let connectionsMade = 0; // Số lỗ đã đục
 
-    // Duyệt qua các điểm ngã rẽ trên đường chính
-    for (let idx of branchIndices) {
-        let p = path[idx];
-        // Tìm các ô dead-end xung quanh
+    // Duyệt các điểm trên đường chính
+    for (let i = 1; i < path.length; i++) {
+        let p = path[i]; // Điểm hiện tại trên đường chính
+
+        // Kiểm tra nếu vị trí này gần Exit, không tạo nhánh giả nữa
+        let distToExit = Math.abs(p.x - exit.x) + Math.abs(p.y - exit.y);
+        if (distToExit <= 5) continue;  // Đảm bảo không tạo nhánh giả quá gần Exit
+
+        // Duyệt các ô xung quanh điểm trên đường chính
         let neighbors = [[0, -1], [1, 0], [0, 1], [-1, 0]];
-        neighbors = shuffle(neighbors);
-
         for (let [dx, dy] of neighbors) {
             let nx = p.x + dx;
             let ny = p.y + dy;
 
-            if (!inBounds(nx, ny)) continue;
-            if (maze[ny][nx] !== 0) continue; // Phải là đường giả
-            // Kiểm tra dead-end: chỉ nối nếu dead-end (chỉ 1 ô mở)
-            if (countOpenNeighbors(nx, ny) === 1) {
-                // Đục 1 ô để nối vào đường chính
-                maze[p.y + dy][p.x + dx] = 0;
-                break; // Mỗi vị trí chỉ nối 1 nhánh
+            // Kiểm tra nếu ô bên cạnh là tường (1) và là nhánh giả (dead-end)
+            if (inBounds(nx, ny) && maze[ny][nx] === 1 && countOpenNeighbors(nx, ny) === 1) {
+                // Trước khi đục tường, kiểm tra bên kia của tường
+                let tx = nx + dx;  // Vị trí bên kia của tường
+                let ty = ny + dy;
+
+                // Kiểm tra bên kia tường là đường đi hợp lệ
+                if (inBounds(tx, ty) && maze[ty][tx] === 0) {
+                    // Đục một ô nối nhánh giả vào đường chính
+                    maze[ny][nx] = 0; // Đục tường tạo lối đi
+
+                    connectionsMade++;
+                    if (connectionsMade >= maxConnections) return; // Đạt giới hạn, dừng lại
+
+                    break; // Dừng duyệt các ô xung quanh điểm này, tiếp tục điểm khác
+                }
             }
         }
     }
@@ -815,6 +824,114 @@ function breakWallsNearFakeBranches() {
             breakCount++;
         }
     }
+}
+
+function createFakeBranchNearExit() {
+    // Vị trí góc phải dưới của Exit
+    let fakeBranchStartX = exit.x + 2;
+    let fakeBranchStartY = exit.y + 2;
+
+    // Đảm bảo rằng vị trí này là hợp lệ và là tường
+    if (inBounds(fakeBranchStartX, fakeBranchStartY) && maze[fakeBranchStartY][fakeBranchStartX] === 1) {
+        // Tạo nhánh giả tại đây (dài 6 ô)
+        carveDeadEnd(fakeBranchStartX, fakeBranchStartY, 6); // Dài 6 ô
+
+        // Sau khi tạo nhánh giả, kết nối nó với một nhánh giả khác
+        connectToOtherFakeBranch(fakeBranchStartX, fakeBranchStartY);
+    }
+}
+//3 function nhánh giả gần Exit connectToOtherFakeBranch findOtherFakeBranches connectBranches
+function connectToOtherFakeBranch(startX, startY) {
+    // Tìm một nhánh giả khác ở vị trí xa hơn Exit (nằm trong phạm vi mê cung)
+    let fakeBranches = findOtherFakeBranches();
+
+    // Nếu có nhánh giả khác, nối nhánh mới vào đó
+    for (let branch of fakeBranches) {
+        let branchX = branch.x;
+        let branchY = branch.y;
+
+        // Đảm bảo vị trí nhánh giả có thể kết nối được (vị trí hợp lệ)
+        if (inBounds(branchX, branchY) && maze[branchY][branchX] === 0) {
+            // Tạo lối đi nối từ nhánh mới vào nhánh giả khác
+            connectBranches(startX, startY, branchX, branchY);
+            break;
+        }
+    }
+}
+
+function findOtherFakeBranches() {
+    // Duyệt qua mê cung để tìm các nhánh giả (các ô có chỉ 1 đường đi)
+    let branches = [];
+    for (let y = 0; y < maze.length; y++) {
+        for (let x = 0; x < maze[y].length; x++) {
+            if (maze[y][x] === 0 && countOpenNeighbors(x, y) === 1) {
+                branches.push({ x, y });  // Thêm nhánh giả vào danh sách
+            }
+        }
+    }
+    return branches;
+}
+
+function connectBranches(startX, startY, endX, endY) {
+    // Đục tường tạo lối đi nối hai nhánh giả
+    let dx = Math.sign(endX - startX);
+    let dy = Math.sign(endY - startY);
+
+    // Di chuyển từ startX, startY đến endX, endY và đục tường
+    let x = startX;
+    let y = startY;
+
+    while (x !== endX || y !== endY) {
+        maze[y][x] = 0; // Đục tường tạo lối đi
+
+        if (x !== endX) x += dx;
+        if (y !== endY) y += dy;
+    }
+}
+
+function connectFakeBranchToMainPath() {
+    // Lấy đường chính từ player → exit
+    let path = getPathFromStartToExit();
+    if (path.length < 4) return; // Quá ngắn thì thôi
+
+    // Tính vị trí 9/10 đoạn đường chính
+    let endIdx = Math.floor(path.length * 9 / 10);  // Chỉ lấy 9/10 đường đi
+    let targetPath = path.slice(0, endIdx);  // Cắt chỉ lấy đoạn đường này
+
+    // Đục tường từ các điểm trong đoạn đường chính này vào nhánh giả
+    let neighbors = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+    let connectionsMade = 0;  // Số lượng lỗ đã đục
+    let maxConnections = 20;  // Giới hạn số lần đục thêm
+
+    // Duyệt các điểm trên đoạn đường chính (từ start đến 9/10 đường tới exit)
+    for (let p of targetPath) {
+        // Duyệt các ô xung quanh điểm hiện tại
+        for (let [dx, dy] of neighbors) {
+            let nx = p.x + dx;
+            let ny = p.y + dy;
+
+            // Kiểm tra điều kiện:
+            // - Nếu ô bên cạnh là tường (1) và là nhánh giả (dead-end)
+            if (inBounds(nx, ny) && maze[ny][nx] === 1 && countOpenNeighbors(nx, ny) === 1) {
+                // Đục tường tạo lối đi vào nhánh giả
+                maze[ny][nx] = 0;  // Đục tường
+
+                connectionsMade++;
+                if (connectionsMade >= maxConnections) return;  // Đạt giới hạn, dừng lại
+
+                break;  // Đục xong 1 ô, tiếp tục với điểm tiếp theo
+            }
+        }
+    }
+}
+
+// Hàm chính gọi 2 hàm trên
+function createFakeBranchAndConnect() {
+    // Tạo nhánh giả ở góc phải dưới Exit
+    createFakeBranchNearExit();
+
+    // Kết nối nhánh giả vào đường chính
+    connectFakeBranchToMainPath();
 }
 
     /* ===== DRAW ===== */
@@ -887,24 +1004,27 @@ document.addEventListener("keydown", e => {
     }
 });
 // ===== CHEAT MOBILE: 3 tap góc trên trái =====
-let cheatTap = 0;
-let cheatTimer = null;
+let cheatTap = 0; // Đếm số lần tap
+let cheatTimer = null; // Lưu timer để reset khi không có hành động nào trong 600ms
 
 canvas.addEventListener("click", e => {
     let rect = canvas.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
+    let x = e.clientX - rect.left; // Lấy tọa độ x của điểm click
+    let y = e.clientY - rect.top; // Lấy tọa độ y của điểm click
 
+    // Kiểm tra nếu bấm vào góc trên trái (x < 50 và y < 50)
     if (x < 50 && y < 50) {
-        cheatTap++;
+        cheatTap++; // Tăng bộ đếm khi bấm vào góc
 
-        if (cheatTimer) clearTimeout(cheatTimer);
-        cheatTimer = setTimeout(() => cheatTap = 0, 600);
+        // Reset lại bộ đếm nếu không bấm trong khoảng thời gian 600ms
+        if (cheatTimer) clearTimeout(cheatTimer); // Nếu timer còn đang chạy thì dừng
+        cheatTimer = setTimeout(() => cheatTap = 0, 600); // Reset lại cheatTap sau 600ms nếu không có bấm
 
+        // Nếu bấm 3 lần, bật chế độ cheat (revealAll)
         if (cheatTap >= 3) {
-            revealAll = !revealAll;
-            drawMaze();
-            cheatTap = 0;
+            revealAll = !revealAll;  // Đảo trạng thái cheat
+            drawMaze();  // Vẽ lại maze
+            cheatTap = 0; // Reset bộ đếm sau khi kích hoạt cheat
             console.log("CHEAT MOBILE: revealAll =", revealAll);
         }
     }
